@@ -1,0 +1,15 @@
+---
+description: 本项目仅查沉浸式翻译 immdata 库，只读
+alwaysApply: true
+---
+
+# 范围与只读（硬性）
+
+- **业务范围**：只看沉浸式翻译插件相关数据，库限定为 **`immdata`**。
+- 禁止默认引用其他 schema（`babel_novel` / `webdata` / `storyai` 等）；除非用户明确要求且说明用途。
+- 表文档以 `docs/tables/immdata/` 与 `docs/tables/INDEX.md` 为准。
+- **只读**：禁止 `INSERT` / `UPDATE` / `DELETE` / `MERGE` / `TRUNCATE` / `DROP` / `ALTER` / `CREATE` / `REPLACE` / `COPY INTO` 等。
+- 允许：`SELECT`、只读元数据、`EXPLAIN`；结果可落本地 `output/`。
+- **中间表/TASK DDL（P022）**：可在 `sql/reports/*_etl.sql` **撰写**建表与日更脚本，供写仓同学执行；**本仓账号不得代跑**这些语句。
+- 连接走 `.env`；禁止把密码写进代码/文档/Git。
+- 若用户要求改库、造数或查非 immdata：拒绝或先确认范围。

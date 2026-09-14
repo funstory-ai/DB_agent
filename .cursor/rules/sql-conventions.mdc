@@ -1,0 +1,44 @@
+---
+description: Databend SQL 与项目目录约定
+globs: "**/*.{sql,py}"
+alwaysApply: false
+---
+
+# SQL / 脚本约定
+
+## 目录
+
+- `sql/adhoc/`：临时探查（**任务结束后清零**；有价值片段并入 reports/tasks）
+- `sql/reports/`：可复用定稿 SQL（命名：`主题_用途.sql`）
+- `docs/tasks/`：任务留档（口径、产物、抽样、映证提示）
+- `scripts/`：Python 只读执行器（连接、跑 SQL、落本地结果）
+- `docs/pitfalls.md`：数据与语法踩坑总表（必查、必补）
+- `docs/tables/`：每张表的结构与来源（必查、必补）
+- `output/`：仅保留当前有效交付 + 对应抽样复核
+
+## 写 SQL 前
+
+1. 先读 `docs/pitfalls.md`，避开已知脏数据与方言坑。
+2. 先查 `docs/tables/INDEX.md` 与目标表文档，确认结构/来源/粒度/关联键；禁止想当然引用。
+3. 先用小范围核对（`LIMIT`、抽样、`COUNT`、空值分布），再写完整报表。
+4. 关键字段含义不明时，先 `DESCRIBE` / 样例 `SELECT`，并回写表文档，不要猜。
+
+## 风格
+
+- 关键字大写；表/字段小写蛇形（若库内已有命名则跟随库内）。
+- 显式列出字段，避免无必要的 `SELECT *`（探查除外）。
+- 时间、枚举、软删除等过滤条件写清楚，并在文件头注释业务口径。
+- 每个可复用 SQL 文件顶部注明：用途、主表、关键过滤、表文档路径、已知坑引用（Pxxx）。
+- **列名避开保留字**（如 `share` 在 Databend 不可作列名；改用 `share_ratio` 等，见 P023）。
+
+## 按天累计看板 / 中间表（P022）
+
+- 选型：**实测**直查耗时后再定单 SQL vs 日表；勿凭事件行数猜。
+- 慢则提供写仓可跑的 `*_etl.sql`：`CREATE TABLE` + 全量回填 + `CREATE TASK`（北京自然日增量 + `REPLACE INTO ... ON`）；本仓只读不代跑 DDL。
+- 看板定稿 SQL 读中间表；探查 SQL 可另文件直查 behaviour（短窗）。
+- 样板：`imm_user_target_lan_stats`；Workspace：`task5_google_workspace_daily_etl.sql` / `daily_board.sql`。
+
+## 执行
+
+- 通过 `scripts/db.py` 或同等只读封装连接；不要散落硬编码 DSN。
+- 结果默认本地查看；大结果写入 `output/`，不写回 Databend。

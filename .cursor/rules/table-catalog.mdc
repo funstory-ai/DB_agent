@@ -1,0 +1,21 @@
+---
+description: 写 SQL 前必须核对 immdata 表结构与来源
+alwaysApply: true
+---
+
+# 表目录强制核对（immdata）
+
+## 开查前
+
+1. 读 `docs/tables/OVERVIEW.md` 选对层级/表。
+2. 查 `docs/tables/INDEX.md`，打开 `docs/tables/immdata/<表>.md`。
+3. 来源/粒度/主键空白时：先探查并补全，再写正式 SQL。
+4. 默认不引用非 `immdata` 表。
+5. 计划中/待写仓建表（如 `imm_workspace_daily_*`）：以手工表文档为准；INDEX 需建表后 `sync_table_catalog` 才出现。
+
+## 禁止
+
+- 臆造字段或按「名字像」join
+- 把 `tmp_*` / `t_*` / `temp*` / `test*` 当正式口径（除非文档明确）
+- 无时间过滤扫描 `user_behaviour` / `token_used_aw` 等大表
+- 对 `user_behaviour.created_ts` 套 `DATE()` / `to_date()` 等函数后再过滤

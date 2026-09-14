@@ -1,0 +1,33 @@
+---
+description: 按任务大类读 docs/norms；仅新大类才扩规范库
+alwaysApply: true
+---
+
+# 规范库（任务大类，勿拆太细）
+
+## 开查前
+
+1. 打开 `docs/norms/README.md`，判定**一个主大类**（查询 / 异常验证 / 建看板 / 数据审核）。
+2. 只读对应那一份 `docs/norms/<大类>.md`。
+3. **禁止**为单个需求发明新类型名；同类内部差异走 pitfalls 与 `docs/tasks/`。
+
+| 需求像… | 大类 |
+|---------|------|
+| 查数、Excel、汇总、口头占比 | `query` |
+| 脏数据/极端值验证、举例+占比 | `anomaly` |
+| Superset/按日看板、中间表+TASK | `dashboard` |
+| 原表 vs 新表 / datapack 加工对错 | `audit` |
+
+## 大类边界（记清）
+
+- `query`：**不建**中间表、不挂看板；非正式小问用短窗（P021）
+- `dashboard`：须实测再定直查 vs 日表（P022）；写仓跑 ETL；**中间表后**须有 Superset 纯 SQL 数据集（board 分段 `ds_*`）+「需求↔字段↔数据集↔图表」；指标形态对照见 `docs/norms/dashboard.md` §3
+- `anomaly`：走 `anomaly_review` 模板
+- `audit`：对照加工规则逐表验（删月 / 季聚 / 另取）；累计禁止 SUM（见 `docs/norms/audit.md`）
+
+## 收工时
+
+- 任务文档写：`规范大类: query|anomaly|dashboard|audit`，并含**需求覆盖对照**
+- 交付前按大类做需求验收（dashboard：模块清单 + 抽日对账 + 指标/图表对照）；未验收不得称完成
+- **仅当出现新大类**（流程骨架不同）或该类新增硬流程时，更新 `docs/norms/`
+- 不要把「又一个 cohort / 又一个事件」加成新大类

@@ -1,0 +1,13 @@
+---
+description: 埋点/付费墙对不上时先 pull 再查插件仓库
+alwaysApply: true
+---
+
+# 插件代码查阅
+
+事件名、trigger、软硬墙、`ab_tag`、上线时间在库里对不上时：
+
+1. `cd F:\extension` 然后 **`git pull`**（每次查阅前必须）
+2. 只读搜索插件；不要改插件代码
+3. 流程见 `docs/norms/extension.md`
+4. 确认结果写入当次 `docs/tasks/`

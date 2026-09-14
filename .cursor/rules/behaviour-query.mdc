@@ -1,0 +1,42 @@
+---
+description: user_behaviour 查询性能硬约束
+alwaysApply: true
+---
+
+# user_behaviour 查询约束
+
+宽表，直接查/并表极慢。
+
+## 必须
+
+- **每次**对 `created_ts` 做**范围过滤**（如 `created_ts >= ... AND created_ts < ...`）
+- 优先再过滤 `event_name`、先收窄 `device_id` 集合再 join
+- 能用日汇总/`dwd_behaviour` 等则不用明细
+- **账号/订单并行为（P016）**：必须 **双路径**  
+  1) `userid → imt_deviceinfo.deviceid = behaviour.device_id`  
+  2) `userid = behaviour.ex_int_arg1`（登录 userid）  
+  两路合并取数；禁止只用设备表或只用 `ex_int_arg1`
+- **按天累计看板（P022）**：先实测目标 SQL 耗时；交互经常 >~10s（尤其 30d+）则落日汇总中间表 + 北京日增量 TASK（样板 `imm_user_target_lan_stats` / `imm_workspace_daily_*`）；看板读中间表，勿长期挂 90d 直查 behaviour
+
+## 禁止
+
+- 不对时间做过滤就扫表或大 join
+- **禁止对时间列套函数**，例如 `DATE(created_ts)`、`to_date(created_ts)`、`DATE_TRUNC(...)` 写在 WHERE 里导致无法用上分区/聚类剪枝
+- 需要按日时：用**常量日期边界**比较，例如  
+  `created_ts >= '2026-05-14' AND created_ts < '2026-05-15'`  
+  而不是 `DATE(created_ts) = '2026-05-14'`
+
+## 非正式小询问（P021，强制）
+
+对话里的占比/完备性/字段核对等**非正式交付**：
+
+- 默认 **抽样 + 短时间窗（1～7 天）**，数分钟内出结论；标明是否抽样
+- 复用已有 Excel 人群，禁止为小问题重跑任务全量
+- 碰 `user_behaviour`：先滤事件、先收窄集合；**一次 SQL**，禁止几十轮串行 `IN` 扫表
+- 预估 >10 分钟：先改方案或问用户是否要精确全量
+
+正式 Excel 交付仍可接受较长查询，但须限时+收窄。
+
+- 转化率归并到 **userid**，避免虚高
+- 行为次数：多设备累加（仅描述）
+- 单设备多账户多为羊毛党；转化只用订单 userid，behaviour 不进转化公式
