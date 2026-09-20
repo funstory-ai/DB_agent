@@ -9,6 +9,17 @@
 - 密码只在本地 `.env`；禁止写入代码、文档、Git。
 - 禁止臆造字段或按名字像就 join；用表前核 `docs/tables/`。
 - `user_behaviour`：必须对 `created_ts` 做范围过滤；禁止对时间列套 `DATE()`/`to_date()` 后再过滤。
+- **转化主体（P018）**：有账号归 `userid`，没有账号用 `device_id`；不要按设备把同一账号拆成多次转化。
+- **移动端（P037）**：android/ios/ipados 的 `device_id` 大部分不在 `imt_deviceinfo`。结果里含移动端时，必须说明这个缺口，不要只用设备表覆盖。
+
+## Codex：写 SQL 前就看这里
+
+Cursor 每轮自动加载 `.cursor/rules/`。**Codex 不会。** 本文件以外的规范，不打开就等于没有。不要用「我读过 pitfalls」代替下面几条；写 SQL 前先用一两句话写出本题口径，再查。
+
+- **某国 / 某语言用户**：默认 `imm_device_native_language` 的母语，不是 `real_geo`。`real_geo` 只表示当时 IP。设备和账号母语、IP 地区说不清时先问。结论里写明主体是设备还是账号。叫「泰国用户」而实际过滤的是 `real_geo='TH'`，算错。
+- **转化 / 漏斗 / 转化率**：有账号归 **userid**（同一账号多设备只算 1 人）；没有账号才用 `device_id`。按设备数转化，算错。
+- **移动端**：不要只用 `imt_deviceinfo` 覆盖 android/ios/ipados。
+- `user_behaviour` 必须限 `created_ts` 范围，不要对时间列套函数。
 
 ## 开查 5 步
 

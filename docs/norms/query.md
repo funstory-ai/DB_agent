@@ -47,6 +47,8 @@
   - **激活**：`event_name='translate_page' AND is_new_user_today='1'`（同日激活率场景）
   - **禁止**默认用「首条 `translate_page` + `install_day`」冒充新装分母（那是激活/翻译进组，会随晚到首译膨胀已闭合安装周）
   - 看板摘要见 [`dashboard.md`](dashboard.md) §3.1；实验/漏斗分母未另说明时按本条
+- **转化主体（P018-D，强制）**：转化 / 漏斗 / 转化率先归到「人」。有账号用 **userid**（同一账号多设备只算 1 人）；没有账号用 **device_id**。禁止按设备把已登录用户拆开，也禁止把无账号设备滤掉。付费分子仍是订单 userid。
+- **移动端设备表缺口（P037，强制提醒）**：`os_name` 为 android/ios/ipados（及 App UA）时，埋点 `device_id` 大部分不在 `imt_deviceinfo`。涉及移动端的结论必须写明这一点和原因，禁止只用设备表 INNER JOIN 当移动端全集。
 - **注册墙类实案（P031）**：分母用**设备级埋点新装**（默认同 P034）；`deviceinfo` 只 LEFT JOIN；禁止 INNER JOIN 把未注册踢出后再比转化。
 - **账号级新装转化（P033）**：勿裸用 `min(installtime)`；须按三过滤剔老号（安装前现金 / 现金早于账号 / 账龄≥30 天）；禁止用 `iospay_renew` 当老客过滤；复用 `sql/reports/query_new_install_user_filter_20260831.sql`。
 - 发现低匹配：先查自身 SQL，再怀疑原表。

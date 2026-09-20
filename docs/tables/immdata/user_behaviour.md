@@ -23,7 +23,7 @@
   - 每次查询都要限制时间；并表前先收窄 device / 事件
   - **禁止** `DATE(created_ts)` / 对时间列套函数后再过滤；改用常量上下界：`created_ts >= '...' AND created_ts < '...'`
   - **按天累计看板（P022）**：事件命中少也可能数十秒；须实测。Workspace 看板读 `imm_workspace_daily_*`；付费墙看板读 `imm_paywall_daily_*`（写仓后），勿挂 90d 直查
-- **关联建议**：与注册用户/订单关联须 **双路径（P016）**：① `imt_deviceinfo.deviceid` = `device_id`；② `ex_int_arg1` = userid（登录才有，P006）。两路合并，勿只用其一。
+- **关联建议**：与注册用户/订单关联须 **双路径（P016）**：① `imt_deviceinfo.deviceid` = `device_id`；② `ex_int_arg1` = userid（登录才有，P006）。两路合并，勿只用其一。**移动端例外（P037）**：android/ios/ipados 的 `device_id` 大部分不在设备表，设备路径会漏；移动端身份以本表 `device_id` 为准，登录仍看 `ex_int_arg1`。
 - **实体关系**：存在单账户多设备、单设备多账户；转化类指标需先定 user/device 口径与去重
 - **Workspace 相关事件（task5）**：前缀 `workspace_*`（如 `workspace_open` / `workspace_translate_click` / `workspace_translate_success` / `workspace_translate_fail` 等）；日更汇总见 `imm_workspace_daily_kpi`、`imm_workspace_daily_dim`
 - **付费硬墙（task6）**：日常触墙仅 `user_need_pro` 且 `trigger='freeUsageLimitModal'`。日更见 `imm_paywall_daily_kpi` / `imm_paywall_daily_wide_*`

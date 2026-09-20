@@ -22,6 +22,7 @@
 - **关联建议**：`userid` → `imt_userinfo.id`；埋点 `device_id` ↔ 本表 `deviceid`（行为并表主路径之一，**须与 `ex_int_arg1` 并用**，P016）
 - **勿想当然**：
   - 仅注册用户有本表数据；能试用/付费均应能挂上 userid
+  - **P037**：移动端埋点 `device_id` 已基本不进本表（短窗：移动端约 13% 能对上，桌面约 48%）。含移动端的分析禁止把本表当设备全集
   - **P015**：历史曾有 `(userid,deviceid)` 重复，**2026-08-12 已按 MAX(id) 清理并通过复核**；分析侧可保留防御性 `DISTINCT`
   - `installchannel` 主流为 chrome_store / edge_store / firefox_store / safari 等；存在 `dev` 渠道
 

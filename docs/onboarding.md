@@ -14,7 +14,7 @@ copy .env.example .env
 
 3. `.env` 填 **你自己的** Databend **只读** 账号（找仓库管理员要账号，不要用别人的密码）。
 4. 用 **Cursor** 打开本仓，开 Agent。`.cursor/rules/` 会自动约束口径与只读。  
-   若用 **Codex**：clone 与 `.env` 相同；规则**不会**自动加载 Cursor 的 `.cursor/rules/`。开查前让 Agent 先读根目录 [`AGENTS.md`](../AGENTS.md) 与本页，并遵守 `docs/workflow.md`。定稿 SQL / `scripts/db.py` 与 IDE 无关，可直接跑。
+   若用 **Codex**：clone 与 `.env` 相同；规则**不会**自动加载 Cursor 的 `.cursor/rules/`。Codex 只会自动看到根目录 [`AGENTS.md`](../AGENTS.md)。硬规则以该文件正文为准，不要假设它会自己去翻 `docs/pitfalls.md`。定稿 SQL / `scripts/db.py` 与 IDE 无关，可直接跑。
 5. 自检：`python scripts/db.py` 能连上即可。
 
 无 Cursor / Codex 时：直接跑 `sql/reports/` 定稿 SQL，或用 `scripts/db.py` 执行 `SELECT`。口径仍以 `docs/norms/`、`docs/pitfalls.md`、`docs/tables/` 为准。

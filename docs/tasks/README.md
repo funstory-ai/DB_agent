@@ -79,6 +79,7 @@
 
 | 编号 | 大类 | 文档 | 说明 |
 |------|------|------|------|
+| T040 | query | [query_ja_paid_free_engine_rank_20260916.md](query_ja_paid_free_engine_rank_20260916.md) | 日语付费/免费用户翻译引擎用量排序 |
 | T018 | query | [query_paywall_ab_20260821.md](query_paywall_ab_20260821.md) | 付费墙 AB；**分母=激活**；09-14 本周已验收 |
 | T028 | anomaly | [anomaly_new_install_surge_ios_20260901.md](anomaly_new_install_surge_ios_20260901.md) | 新装突增；init_page_daily×is_new_user_today；是否 iOS |
 
@@ -131,17 +132,19 @@
 | T035 | query | ✅ | 09-10 | [query_thailand_user_profile_20260910.md](query_thailand_user_profile_20260910.md) | 近30d泰语设备5507；主功能web/video/划词；桌面Windows为主 |
 | T036 | query | ✅ | 09-10 | [query_thailand_user_pay_member_20260910.md](query_thailand_user_pay_member_20260910.md) | 泰语账号6251；历史付费152；当前有效会员65 |
 | T037 | query | ✅ | 09-14 | [query_usage_limit_hard_banner_20260914.md](query_usage_limit_hard_banner_20260914.md) | 新版硬墙：简中/非简中点击+现金/试用；三周对照升级率下降 |
+| T038 | query | ✅ | 09-14～16 | [query_colleague_paywall_uv_reconcile_20260914.md](query_colleague_paywall_uv_reconcile_20260914.md) | 同事非简中~6k触墙 vs T037：口径差非算错 |
+| T039 | audit | ✅ | 09-16 | [audit_gcp_bill_202608.md](audit_gcp_bill_202608.md) | GCP 8 月账单 vs AW；对齐 7/31 后残差~1% |
 
-**下一可用编号：`T038`。**（T018 / T028 进行中）
+**下一可用编号：`T041`。**（T018 / T028 / T040 进行中）
 
 ### 按大类速查
 
 | 大类 | 编号 |
 |------|------|
-| query | T001–T003, T007–T008, T011, T015, T018进行中, T020, T024, T026, T029, T030, T031, T033, T034, T035, T036, T037 |
+| query | T001–T003, T007–T008, T011, T015, T018进行中, T020, T024, T026, T029, T030, T031, T033, T034, T035, T036, T037, T038, T040进行中 |
 | dashboard | T004–T006, T009, T025 ✅ |
 | anomaly | T012, T014, T016, T021, T022, T023, T028, T032 |
-| audit | T010, T013, T017⏸, T019, T027 |
+| audit | T010, T013, T017⏸, T019, T027, T039 ✅ |
 
 ---
 
