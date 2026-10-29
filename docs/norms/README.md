@@ -21,6 +21,8 @@
 |----|-------------|
 | 只读 + 仅 `immdata` | `project-readonly` |
 | 避坑 | `docs/pitfalls.md` |
+| **结论必须有证据（P043）** | 猜测可提，须标明并附依据；禁止揣测后当成答案。见 pitfalls P043 |
+| **已交付的格子（P044）** | 同一个数字必须来自同一次查询。重跑变了先对差异。见 pitfalls P044 |
 | 选表 | `docs/tables/OVERVIEW.md` |
 | 埋点/墙/实验对不上 | [extension.md](extension.md)：先 `git pull` `F:\extension` 再查插件 |
 | **主要翻译业务事件/合成口径** | [translate_biz.md](translate_biz.md)（网页/PDF/电子书/悬浮/划词…；跨 query/dashboard 复用） |

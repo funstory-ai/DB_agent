@@ -29,6 +29,7 @@
 - **付费硬墙（task6）**：日常触墙仅 `user_need_pro` 且 `trigger='freeUsageLimitModal'`。日更见 `imm_paywall_daily_kpi` / `imm_paywall_daily_wide_*`
 - **勿想当然**：
   - `install_day` 可能出现 `1970-01-01`（占位），不能当真实安装日
+  - **`is_new_user_today='1'` = 插件侧「当日新用户」标记（安装日维度）**，**不等于**账号是新注册；重装/换机后登录老号仍可能为 1（P034 / **P039**）
   - `user_type` 含 `anonymous` / `free` / 会员档位等，口径需先对齐业务
   - `platform_type` 除 desktop/mobile/tablet 外，可能混入 iPhone 机型字符串
   - `ex_char_arg*` / `ex_int_arg*` 含义随 `event_name` 变化，必须查表文档或埋点说明

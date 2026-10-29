@@ -94,7 +94,7 @@
 | 编号 | 大类 | 文档 | 说明 |
 |------|------|------|------|
 | T077 | query | [query_gift_weekly_funnel_20261020.md](query_gift_weekly_funnel_20261020.md) | 新墙周漏斗剔老号；**10-23 已由 T084、10-26 已由 T085 同版刷新（asof 10-26 01:04）** |
-| T085 | query | [query_gift_weekly_funnel_refresh_20261026.md](query_gift_weekly_funnel_refresh_20261026.md) | 新墙周漏斗剔老号 asof 10-26 01:04；**已刷新见 T085（asof 10-28 01:04，复用 scripts/export_t085_gift_weekly_funnel_20261026.py）** |
+| T085 | query | [query_gift_weekly_funnel_refresh_20261026.md](query_gift_weekly_funnel_refresh_20261026.md) | 新墙周漏斗剔老号 asof 10-26 01:04；**已刷新见 T090（asof 10-28 01:04，由 canonical `scripts/export_gift_weekly_funnel.py` 产出）** |
 | T073 | query | [query_gpt_token_monthly_ucloud_20261015.md](query_gpt_token_monthly_ucloud_20261015.md) | GPT 含/不含 UCloud；**10-20 搁置·等 v2.4/路由 v1.1 上生产看 log** |
 | T071 | query | [query_ucloud_token_cost_1m_20261015.md](query_ucloud_token_cost_1m_20261015.md) | UCloud 近 30 天估成本 $2,820；**10-20 与 T073 一起搁置** |
 | T065 | query | [query_login_ai_quota_gift_50pct_from1010_20261012.md](query_login_ai_quota_gift_50pct_from1010_20261012.md) | 新墙50%（无墙/有墙）；**10-13 搁置·后续周更续跟** |
@@ -178,7 +178,7 @@
 | T072 | anomaly | ✅ | 10-15 | [anomaly_order_sync_gap_20261014.md](anomaly_order_sync_gap_20261014.md) | 10-14 收入偏低（结构）当天订单齐；日更水位非故障；**已验收**；P043 |
 | T074 | query | ✅ | 10-19 | [query_user_token_karehaizai_20261019.md](query_user_token_karehaizai_20261019.md) | karehaizai token；多笔网页请求，非单笔扣光、非同 token 高频；**已验收** |
 | T075 | query | ✅ | 10-19 | [query_user_token_6665970_20261019.md](query_user_token_6665970_20261019.md) | userid 6665970 token 为 0；免费引擎 6 次翻译；**已验收** |
-| T076 | query | ✅ | 10-20 | [query_login_ai_quota_gift_50pct_20261020.md](query_login_ai_quota_gift_50pct_20261020.md) | 版式不对（含未剔除）；以 T077 为准 |
+| T076 | query | ❌ 已清理 | 10-20 | （版式作废，文档/脚本/SQL 已于 10-29 清理；以 T077/T090 为准） | 版式不对（含未剔除）；以 T077 为准 |
 | T077 | query | ⏸ | 10-20 | [query_gift_weekly_funnel_20261020.md](query_gift_weekly_funnel_20261020.md) | 新墙周漏斗剔老号；**10-20 已验收暂挂·下周同一版再刷** |
 | T078 | anomaly | ✅ | 10-20 | [anomaly_lang_activation_two_sql_20261020.md](anomaly_lang_activation_two_sql_20261020.md) | 两套「分语言激活」不是同一批人；without_fb 漏掉只译当天的设备 |
 | T084 | query | ✅ | 10-23 | [query_gift_weekly_funnel_refresh_20261023.md](query_gift_weekly_funnel_refresh_20261023.md) | 新付费墙周漏斗剔老号刷新到 asof 10-23 00:58（T077 同版再刷） |
@@ -191,8 +191,9 @@
 | T089 | query | ✅ | 10-28 | [query_promo_3cohorts_20261028.md](query_promo_3cohorts_20261028.md) | 促销三类：高频免费(前1%)/月费/年费到期(≤11-13)；已出 Excel，待验收 |
 | T092 | query | ✅ | 10-28 | [query_max_trial_abuse_20261028.md](query_max_trial_abuse_20261028.md) | Max 试用薅羊毛：账号口径突发 118 人/纯羊毛 48 人；卡维度 157 张农场卡、4,574 次 Max 试用（近月 21.4%） |
 | T093 | query | ✅ | 10-29 | [query_max_upgrade_20261029.md](query_max_upgrade_20261029.md) | Max 会员「存量升级补差价」取证→P047：升级占比下限 28.15%；Max 单 amountpaid 含 ¥1.15 级差价，非全价 |
+| T094 | query | ✅ | 10-29 | [query_user_token_kjzkg84ctb_20261029.md](query_user_token_kjzkg84ctb_20261029.md) | 单用户月度 token 消耗（kjzkg84ctb@privaterelay.appleid.com / id=609408）：2026-01-27 起全月 0；长期 Pro 月付但极少使用 |
 
-**下一可用编号：`T094`。**（T018 / T028 / T040 / T046 / T061 / T079 / T080 / T081 / T087 / T091 进行中；T017 / T041 / T042 / T044 / T018续 / T057 / T059 / T060 / T062 / T063 / T064 / T065 / T071 / T073 / T077 搁置）
+**下一可用编号：`T095`。**（T018 / T028 / T040 / T046 / T061 / T079 / T080 / T081 / T087 / T091 进行中；T017 / T041 / T042 / T044 / T018续 / T057 / T059 / T060 / T062 / T063 / T064 / T065 / T071 / T073 / T077 搁置）
 
 ### 按大类速查
 

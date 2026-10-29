@@ -69,6 +69,7 @@
 | 若必须 DELETE+INSERT | 同一 TASK 体内连续执行；补丁/任务文档写明失败后如何回填 |
 | **Databend 多语句 TASK** | **必须** `AS BEGIN … DELETE …; INSERT …; END;`（见 **P028**）；禁止裸 `AS DELETE; INSERT;` |
 | **Databend CRON** | **6 段含秒**（`秒 分 时 日 月 周`），例 `'0 0 6 * * 1'`；禁止 5 段 `'0 6 * * 1'`（**P035**） |
+| **上下游调度** | 下游中间表 TASK 的 Cron **必须晚于上游**日/周表（核对绝对时刻+时区；UTC≠上海）。只看「今天跑过」不够，须 `MAX(下游业务日/周)=MAX(上游)`（**P038**） |
 | TASK 验收 | 写仓后 `SHOW TASKS` 查 **definition 含 INSERT** + schedule 六段；勿只看 Started / last_success |
 | 验收必查新鲜度 | `MAX(dt_bj)`（或业务日）须对齐 kpi / 昨日北京日；**仅抽日 SUM 不够** |
 
@@ -173,6 +174,8 @@
 | 激活 | `translate_page` | `is_new_user_today='1'` | `new_device_count` |
 | 日活 | `translate_page` | — | `device_count` |
 | 激活率 | — | 同日 `激活/新装` | 派生，勿 AVG 日率 |
+
+> **P039**：上表「新装/激活」是插件侧 `is_new_user_today`，**可含重装老号**。看板日活对比一般仍用 P034。**新付费墙 / 登录赠送类**主交付默认套 P039 剔老号（不必再问）；勿默默改写无关看板分母。
 
 数据源优先 `imm_app_new_event_device_count_by_utf8_day`；异常排查/剔集成可直查 `user_behaviour`（须限时）。
 
@@ -303,6 +306,7 @@
 | 日更 DELETE 近窗后 INSERT 空写仍称数据就绪 | 见「防掏空」+ 日期新鲜度 |
 | CREATE TASK 裸写 DELETE; INSERT; | 须 `AS BEGIN … END;`（P028） |
 | CREATE TASK 用 5 段 cron | 须 6 段含秒（P035） |
+| 下游 TASK 早于上游日/周更 | 看板永久落后一周级；须对绝对时刻+时区，改 Cron 并立刻重算（P038） |
 | board 写死日期窗当生产 Dataset | 须滚动窗 + 标注可挂板段（P029） |
 | board 留作废 `ds_*` 段不删 | 见「作废清理」 |
 | 擅自瘦身 dim | 验收不通过 |

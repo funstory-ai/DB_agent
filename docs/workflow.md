@@ -9,7 +9,7 @@
 3. **先读避坑** — `docs/pitfalls.md`（相关 P）
 4. **先核表结构/来源** — `docs/tables/OVERVIEW.md` → 单表文档
 5. **埋点/墙/实验对不上** — 先 `git pull` `F:\extension` 再查插件（见 `docs/norms/extension.md`）
-6. **口径正确优先** — 小范围核对后再出数
+6. **口径正确优先** — 小范围核对后再出数；**结论必须有证据（P043）**，猜测须标明，不能当成答案
 7. **交付前抽样复核** — 正式 query 交付见 P019；禁止为抽样重跑全量
 8. **交付后留档并清零试错** — `docs/tasks/` + `sql/reports/`
 9. **补规范库** — 仅**新大类**或该类硬流程变更时更新 `docs/norms/`；单次口径进 tasks / pitfalls

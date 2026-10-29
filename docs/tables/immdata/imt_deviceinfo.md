@@ -24,7 +24,11 @@
   - 仅注册用户有本表数据；能试用/付费均应能挂上 userid
   - **P037**：移动端埋点 `device_id` 已基本不进本表（短窗：移动端约 13% 能对上，桌面约 48%）。含移动端的分析禁止把本表当设备全集
   - **P015**：历史曾有 `(userid,deviceid)` 重复，**2026-08-12 已按 MAX(id) 清理并通过复核**；分析侧可保留防御性 `DISTINCT`
+  - **P018-E**：同一 `deviceid` 可有多行、且 `installtime` 相同、`userid` 不同。`row_number` 只按 `installtime` 排序会随机留一个账号。设备是否付过费，看任一账号（P013）
   - `installchannel` 主流为 chrome_store / edge_store / firefox_store / safari 等；存在 `dev` 渠道
+  - **`installtime` / `createtime` 常晚于埋点激活**（设备入表/同步延迟；短窗约七成 `createtime` 在激活之后）。**禁止**用二者与 `user_behaviour.created_ts` 比先后来判「是否老号重装」（P039）；老号看 `imt_userinfo.createtime`
+  - `installtime` **≠** 可靠真·首次安装日（迟补上报，见 P033）；排除 `1970-01-01` 占位
+  - `userid` → `imt_userinfo.id`；本表无行 ≠ 未激活（未注册本来就没有）
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）

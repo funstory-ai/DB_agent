@@ -7,9 +7,12 @@
 - **业务口径（共用）**: [`docs/norms/translate_biz.md`](../norms/translate_biz.md)
 - **定稿 SQL**:
   1. 周表白名单/TASK：`sql/reports/dashboard_t025_week_event_expand_etl.sql`（§2 历史回填勿无故重跑）
-  2. 插件分业务留存：`sql/reports/dashboard_translate_weekly_retention_etl.sql`
-  3. BabelDoc 留存：`sql/reports/dashboard_t025_babeldoc_weekly_retention_etl.sql`
+  2. 插件分业务留存：`sql/reports/dashboard_translate_weekly_retention_etl.sql`（Cron：**周一 10:00 上海**）
+  3. BabelDoc 留存：`sql/reports/dashboard_t025_babeldoc_weekly_retention_etl.sql`（Cron：**周一 10:30 上海**）
   4. board：`sql/reports/dashboard_translate_weekly_retention_board.sql`
+  5. **2026-09-28 调度修复（写仓一次跑完）**：`sql/reports/dashboard_t025_retention_schedule_fix_20260928.sql`
+     - 根因：原 06:00/06:30 早于上游周表≈北京 08:02 → 看板停在上上周、最新周无 W1（**P038**）
+     - 修复：改 Cron + 立刻全量重算；验收 `biz_max = src_week_max`（当日应为 09-21）
 
 ## 初始需求（原文）
 

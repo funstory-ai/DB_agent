@@ -23,6 +23,9 @@
 - **勿想当然**：
   - `accounttype`：`normal` / `oauth` / `api_key`
   - `platform` 大量为空或 `''`，`cn` 表示国内相关渠道，不可当操作系统
+  - **`createtime` = 账号注册时间**（判老号/新号用本字段，见 P033 / P039）；关联键是本表 **`id`**（订单/`deviceinfo.userid`/`ex_int_arg1` 对齐 `id`，勿与 `uid` 混用）
+  - 与设备级 P034 激活比先后时：默认 **`createtime < first_ts − 1 天`** 才算老号（1 天缓冲，避免同会话先注册再译误伤，P039）；严格 `< first_ts` 会误伤新号
+  - `deviceid` 字段大量为空或不可靠，判「最早设备」请用 `imt_deviceinfo` 按 `userid` 取最早 `installtime`/`createtime`，不要依赖本表 `deviceid`
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）

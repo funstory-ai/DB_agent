@@ -28,7 +28,7 @@
 
 - **转化主体**：有账号归 **userid**（同一账号多设备只算 1 人）；没有账号用 **device_id**
 - 行为次数描述：用户下多设备 **累加**
-- 单设备多账户：多为羊毛党；付费分子走订单 userid，behaviour 不进付费分子
+- 单设备多账户：多为羊毛党；付费分子走订单 userid，behaviour 不进付费分子。同一 `deviceid`、同一 `installtime`、多个 userid 时，去重必须有唯一决胜键；这台是否付过费看任一账号（P018-E）
 - **移动端（P037）**：android/ios/ipados 埋点 `device_id` 大部分不在 `imt_deviceinfo`；涉及移动端须说明，勿把设备表当移动端全集
 
 ## 查数选表捷径
