@@ -89,6 +89,7 @@
 | T087 | query | [query_sales_discount_2025_20261026.md](query_sales_discount_2025_20261026.md) | 2025 打折销售活动清单（CNY，按 couponname 聚合） |
 | T081 | query | [query_ucloud_model_detail_202607_20261022.md](query_ucloud_model_detail_202607_20261022.md) | UCloud 各模型明细（7月→现在）脱敏 Excel；**已出，待对外给供应商** |
 | T091 | query | [query_mrr_growth_decisions_20261028.md](query_mrr_growth_decisions_20261028.md) | 全量证据梳理：MRR 增长方案与五个最紧迫决策 |
+| T095 | dashboard | [dashboard_ingest_ledger_20261029.md](dashboard_ingest_ledger_20261029.md) | 新账本（计费 v2.4/路由 v1.1）入 immdata，供 UCloud request 级对账；**ETL 草案已出，阻塞于 B1–B4**（详见文档） |
 ## 搁置
 
 | 编号 | 大类 | 文档 | 说明 |
@@ -193,14 +194,14 @@
 | T093 | query | ✅ | 10-29 | [query_max_upgrade_20261029.md](query_max_upgrade_20261029.md) | Max 会员「存量升级补差价」取证→P047：升级占比下限 28.15%；Max 单 amountpaid 含 ¥1.15 级差价，非全价 |
 | T094 | query | ✅ | 10-29 | [query_user_token_kjzkg84ctb_20261029.md](query_user_token_kjzkg84ctb_20261029.md) | 单用户月度 token 消耗（kjzkg84ctb@privaterelay.appleid.com / id=609408）：2026-01-27 起全月 0；长期 Pro 月付但极少使用 |
 
-**下一可用编号：`T095`。**（T018 / T028 / T040 / T046 / T061 / T079 / T080 / T081 / T087 / T091 进行中；T017 / T041 / T042 / T044 / T018续 / T057 / T059 / T060 / T062 / T063 / T064 / T065 / T071 / T073 / T077 搁置）
+**下一可用编号：`T096`。**（T018 / T028 / T040 / T046 / T061 / T079 / T080 / T081 / T087 / T091 / T095 进行中；T017 / T041 / T042 / T044 / T018续 / T057 / T059 / T060 / T062 / T063 / T064 / T065 / T071 / T073 / T077 搁置）
 
 ### 按大类速查
 
 | 大类 | 编号 |
 |------|------|
 | query | T001–T003, T007–T008, T011, T015, T018进行中, T020, T024, T026, T029, T030, T031, T033, T034, T035, T036, T037, T038, T040进行中, T041⏸, T043 ✅, T044⏸, T045 ✅, T046进行中, T047 ✅, T048 ✅, T049 ✅, T050 ✅, T051 ✅, T052 ✅, T054 ✅, T055 ✅, T056 ✅, T057⏸, T058 ✅, T060⏸, T061进行中, T062⏸, T063⏸, T064⏸, T065⏸, T066 ✅, T067 ✅, T068 ✅, T069 ✅, T070 ✅, T071⏸, T073⏸, T074 ✅, T075 ✅, T076 版式作废, T077⏸, T084 ✅, T087 进行中, T088 ✅, T090 ✅ |
-| dashboard | T004–T006, T009, T025 ✅, T080进行中 |
+| dashboard | T004–T006, T009, T025 ✅, T080进行中, T095进行中（不挂板，见文档偏差说明） |
 | anomaly | T012, T014, T016, T021, T022, T023, T028, T032, T072, T086 ✅ |
 | audit | T010, T013, T017⏸, T019, T027, T039, T042⏸, T059⏸ |
 
