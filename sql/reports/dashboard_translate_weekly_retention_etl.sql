@@ -122,11 +122,11 @@ GROUP BY 1, 2, 3, 4;
 
 
 -- =============================================================================
--- §3 周更 TASK（周一 06:00 上海；全量重算；P028 BEGIN…END；P035 六段 cron）
+-- §3 周更 TASK（周一 10:00 上海；须晚于上游周表≈北京 08:02；全量重算；P028 BEGIN…END；P035 六段 cron）
 -- =============================================================================
 CREATE TASK update_imm_translate_biz_firstuse_weekly_retention
 WAREHOUSE = 'default'
-SCHEDULE = USING CRON '0 0 6 * * 1' 'Asia/Shanghai'
+SCHEDULE = USING CRON '0 0 10 * * 1' 'Asia/Shanghai'
 AS BEGIN
   DELETE FROM immdata.imm_translate_biz_firstuse_weekly_retention;
   INSERT INTO immdata.imm_translate_biz_firstuse_weekly_retention

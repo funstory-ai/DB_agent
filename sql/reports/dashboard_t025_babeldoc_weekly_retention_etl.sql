@@ -96,11 +96,11 @@ GROUP BY 1, 2, 3;
 
 
 -- =============================================================================
--- §2 周更 TASK（周一 06:30 上海；全量重算；P028 / P035）
+-- §2 周更 TASK（周一 10:30 上海；与分业务留存同落后于上游周表；全量重算；P028 / P035）
 -- =============================================================================
 CREATE TASK update_imm_babeldoc_firstuse_weekly_retention
 WAREHOUSE = 'default'
-SCHEDULE = USING CRON '0 30 6 * * 1' 'Asia/Shanghai'
+SCHEDULE = USING CRON '0 30 10 * * 1' 'Asia/Shanghai'
 AS BEGIN
   DELETE FROM immdata.imm_babeldoc_firstuse_weekly_retention;
   INSERT INTO immdata.imm_babeldoc_firstuse_weekly_retention
