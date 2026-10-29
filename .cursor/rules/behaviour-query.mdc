@@ -38,6 +38,7 @@ alwaysApply: true
 正式 Excel 交付仍可接受较长查询，但须限时+收窄。
 
 - **转化主体（P018-D）**：有账号归 **userid**（多设备只算 1 人），没有账号用 **device_id**；禁止按设备把已登录用户拆开，也禁止丢掉无账号设备。付费分子仍是订单 userid
+- **同一设备多行账号（P018-E）**：`row_number` 必须有唯一决胜键。同一 `deviceid`、同一 `installtime`、多个 userid 时，不能随机留一行。设备粒度「付过费」看任一关联账号
 - 行为次数：多设备累加（仅描述）
 - 单设备多账户多为羊毛党；付费分子走订单 userid，behaviour 不进付费分子
 - **移动端（P037）**：android/ios/ipados 的 `device_id` 大部分不在 `imt_deviceinfo`（2026-09-19 一天 `init_page_daily`：移动端命中约 13%，桌面约 48%）。涉及移动端必须在结论里说明，禁止只用设备表覆盖移动端

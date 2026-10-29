@@ -27,3 +27,6 @@ outputs/
 
 # Accidental empty junk
 /=
+
+# Agent project memory (WorkBuddy runtime notes — not project deliverables)
+.workbuddy/
