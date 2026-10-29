@@ -658,23 +658,33 @@ WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
 ```
 - 关联：P008（单位/币种）、P013（付费含兑换码）、P043（结论有证据）；表文档 `docs/tables/immdata/exchangerates.md`；补齐提案 `sql/reports/probe_add_missing_currency_rates.sql`
 
-### P047 — Max 会员含大量「存量升级补差价」，不能当全新年费/新增收入
-- 发现日期：2026-10-29（用户明确要求写入规范）
-- 涉及：`imt_subscriptiongoodsorder`（`membership='max'` / `subscriptiontype LIKE 'max%'`）；Max 档收入 / Max 新增订阅 / Max 年费统计
+### P047 — Max 升级用户的界定 + 差价非全价（不能当全新年费/新增收入）
+- 发现日期：2026-10-29（用户要求精确界定）
+- 涉及：`imt_subscriptiongoodsorder`（`membership='max'` / `ordertype='upgrade'` / `subscriptiontype LIKE 'max%'`）；Max 档收入 / Max 新增订阅 / Max 年费统计
 - 现象：
   - 选 `membership='max'`（或 `subscriptiontype LIKE 'max%'`）当「Max 会员 / Max 年费」时，会把**从已有会员升级上来的人**算成「全新年费」买家；且单笔 `amountpaid` 只是**差价**，不是 Max 全价。
+- **如何界定「Max 升级用户」（两种等价口径，取其一即可）**：
+  - **显式信号（优先）**：`ordertype='upgrade'`。全表共 **5,126** 条；其中 `membership='max'` 的 finished 单 **1,734** 条即直接的 Max 升级单（其余多落在 `subscription` 5,205 / `normal` 4,054 / `iospay_renew` 1,174 / `trial` 59,649）。
+  - **行为口径（更全）**：同一 `userid` 在**首笔 Max 单之前已有未到期的非 Max 会员付费单**（即旧会员 `cover_end > Max 下单日`）。未含试用转正 / 兑换码会员 / 换号等情况，真实升级占比更高。
+  - **反例（非升级 = 真·全新）**：无任何更早会员单，或旧会员在 Max 下单日**已过期** → 才可能是「首次成为会员即买 Max」。
 - 举例 / 证据（2026-10-29 查 `imt_subscriptiongoodsorder`，`finished` + `COALESCE(isdeleted,0)=0`）：
-  1. **升级比例（保守下限）**：有 Max 付费单的 `userid` 共 **5,844**；其中 **1,645** 个在首笔 Max 单之前已有非 Max 会员付费单（`monthly`/`yearly`/`two_yearly`，`amountpaid>0`）= **28.15%**。未含「试用转正」「兑换码会员」「旧单已失效/换号」等，真实升级占比更高。
-  2. **金额是差价（非全价）**：`max_yearly` 付费单 `amountpaid` 跨度极大——最小 **¥1.15**、最大 **¥5,988,000**；含大量 ¥1~¥500 小额（13 单 ≤¥10、111 单 ≤¥100）。全新年费不可能 ¥1.15，这些只能是补差价。`max_monthly` 同理（最小 ¥0.93）。
-- 根因：升级逻辑 = 现有会员按「Max 价 − 当前剩余权益」补差价；订单 `amountpaid` 记录的就是差价，不是 Max 档全价。
+  1. **升级比例（保守下限 28.15%）**：有 Max 付费单的 `userid` 共 **5,844**；其中 **1,645** 个在首笔 Max 单之前已有非 Max 会员付费单（`monthly`/`yearly`/`two_yearly`，`amountpaid>0`）。未含试用转正 / 兑换码 / 旧单失效 / 换号，真实升级占比更高。
+  2. **`ordertype='upgrade'` 直接标记**：Max finished 单里 `upgrade` **1,734** 条即升级，是升级的最干净信号。
+  3. **金额是差价（非全价）**：`max_yearly` 付费单 `amountpaid` 跨度极大——最小 **¥1.15**、最大 **¥5,988,000**；含大量 ¥1~¥500 小额（13 单 ≤¥10、111 单 ≤¥100）。snap 列表价 ¥1599（CNY），实际 `amountpaid` 更小，只能是补差价。`max_monthly` 同理（最小 ¥0.93）。
+- 根因：升级逻辑 = 现有会员按「Max 价 − 当前剩余权益」补差价；订单 `amountpaid` 记录的就是差价，不是 Max 档全价；且升级在订单层用 `ordertype='upgrade'` 显式标记。
 - 正确做法 / 规避：
-  1. **统计「Max 全新订阅 / 新增年费」须剔升级**：按 `userid` 判断「首笔 Max 单之前是否已有非 Max 会员付费/有效单」，是则归为「存量升级」，不计入「全新」。
-  2. **Max 收入别拿差价当全价累加**：单笔 `amountpaid` 是差价，直接求和既不等于「Max 年费全价 × 人数」也不等于真实新增 ARPU；要看 Max 档真实价值应按 **Max 标准定价**，而非用订单差价求和。
-  3. **区分两类**：首次成为会员即买 Max（无更早会员单）= 真·全新；从 `pro`/`monthly`/`yearly` 升级 = 补差价。两者人数与金额语义不同，禁止混成一个「Max 年费」数。
-  4. 与 **P013**（付费/试用分开、兑换码算付费）、**P046**（金额按标准价计，但本坑是「差价」语义、非币种问题）并列。
+  1. **统计「Max 全新订阅 / 新增年费」须剔升级**：先用 `ordertype='upgrade'` 剔出显式升级单；行为口径用「首笔 Max 单前存在 `cover_end > Max 下单日` 的非 Max 会员付费单」判断。两者都归「存量升级」，不计入「全新」。
+  2. **Max 收入别拿差价当全价累加**：单笔 `amountpaid` 是差价，直接求和既不等于「Max 年费全价 × 人数」也不等于真实新增 ARPU；看 Max 档真实价值应按 **Max 标准定价**（年费 ¥1599 / 月费 ¥199，见记忆 2026-10-26），而非用订单差价求和。
+  3. **区分两类**：首次成为会员即买 Max（无更早会员单）= 真·全新；从 `pro`/`monthly`/`yearly` 升级 = 补差价。人数与金额语义不同，禁止混成一个「Max 年费」数。
+  4. 与 **P013**（付费/试用分开、兑换码算付费）、**P046**（金额按标准价计，但本坑是「差价」语义、非币种问题）、**P048**（升级单 `cover_end` 截断旧有效期）并列。
 - 示例 SQL（升级识别，只读）：
 ```sql
--- 升级自存量会员的 Max 用户：首笔 Max 单之前已有非 Max 会员付费单
+-- 显式升级单（最干净）
+SELECT COUNT(*) FROM immdata.imt_subscriptiongoodsorder
+WHERE COALESCE(isdeleted,0)=0 AND orderstatus='finished'
+  AND membership='max' AND ordertype='upgrade' AND COALESCE(amountpaid,0)>0;
+
+-- 行为口径：首笔 Max 单之前已有未到期的非 Max 会员付费单
 WITH max_first AS (
   SELECT userid, MIN(createtime) AS first_max_ct
   FROM immdata.imt_subscriptiongoodsorder
@@ -691,4 +701,50 @@ WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
   AND COALESCE(o.amountpaid,0) > 0
   AND o.createtime < m.first_max_ct;
 ```
-- 关联：T 待立项；复现脚本 `scripts/query_max_upgrade_share_20261029.py`
+- 关联：T093；复现脚本 `scripts/query_max_upgrade_share_20261029.py`
+
+### P048 — Max 升级单的 `cover_end` 截断旧会员剩余有效期（到期时间有问题）
+- 发现日期：2026-10-29（用户指出「Max 的到期时间是有问题的」）
+- 涉及：`imt_subscriptiongoodsorder` 的 `cover_end` 推导（`createtime + subscriptionday`）；Max 有效 / 到期 / 续费 / 留存统计（如 `query_max_users_lang_1y_20260924.sql` 用 `MAX(cover_end) >= NOW()` 判「仍在 Max」）
+- 现象：
+  - 升级单的覆盖到期 `cover_end = 下单日 + subscriptionday`，**从升级下单日重新起算，没有承接旧会员的剩余有效期**。结果是：旧会员已付、尚未用完的天数被「吃掉」，推导出的 Max 到期日比「旧到期顺延」早了几百天。
+- 举例 / 证据（2026-10-29，`finished`+`COALESCE(isdeleted,0)=0`，仅看 `ordertype='upgrade'` 且有 prior 非 Max 会员的 Max 单）：
+  1. 有 prior 非 Max 会员的 Max `upgrade` 单 `userid` **1,115** 个；其中 **1,106（99.19%）升级时旧会员仍有效**（`prior_cover_end > 升级下单日`）。
+  2. 截断幅度（若按「旧到期 + 365 天」堆叠应得 − 实际覆盖）：抽样 **411~735 天**。例：userid `141273` 旧年费本到 `2027-07-05`，2025-06-30 买 max_monthly 升级，系统算出 Max 到期 = `2025-07-31`，比旧到期早近 2 年；userid `2177020` 旧年费本到 `2027-05-26`，升级后 Max 到期只到 `2026-06-17`，丢 708 天。
+- 根因：升级被当成「重新开一个 Max 订阅」处理——金额按差价收，但覆盖期从升级日重算，而非在旧会员剩余有效期上顺延。
+- 正确做法 / 规避：
+  1. **算 Max 有效 / 到期 / 续费 / 留存时，升级单的 `cover_end` 不能直接用** `createtime + subscriptionday`；该值对升级单会把旧会员剩余有效期截断。
+  2. 若需正确的 Max 在订状态/到期：把升级单的覆盖期「接在旧会员剩余有效期之后」再求 `MAX(cover_end)`；或仅用「真正全新 Max」用户的 `cover_end`，升级用户单列处理。
+  3. 凡涉及 `cover_end >= NOW()` / 续费率 / Max 有效天数的口径，先按 P047 拆出升级单，确认是否已被截断误伤；否则「仍在 Max」「Max 续费率」会被低估。
+  4. 与 **P047**（升级界定 / 差价）并列；`cover_end` 推导见 `sql/reports/query_max_users_lang_1y_20260924.sql` 第 15 行。
+- 示例 SQL（截断检测，只读）：
+```sql
+-- 升级单里，旧会员在升级时仍有效（=> cover_end 被截断）的比例与丢天数
+WITH upg AS (
+  SELECT userid, createtime AS upg_ct,
+         DATEADD(day, subscriptionday, createtime) AS upg_cover_end
+  FROM immdata.imt_subscriptiongoodsorder
+  WHERE COALESCE(isdeleted,0)=0 AND orderstatus='finished'
+    AND LOWER(membership)='max' AND subscriptionday>0
+    AND ordertype='upgrade' AND COALESCE(amountpaid,0)>0
+),
+prior AS (
+  SELECT o.userid,
+         MAX(DATEADD(day, o.subscriptionday, o.createtime)) AS prior_cover_end
+  FROM immdata.imt_subscriptiongoodsorder o
+  JOIN upg u ON o.userid=u.userid
+  WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
+    AND LOWER(o.membership)<>'max'
+    AND o.subscriptiontype IN ('monthly','yearly','two_yearly')
+    AND COALESCE(o.amountpaid,0)>0
+    AND o.createtime < u.upg_ct
+  GROUP BY o.userid
+)
+SELECT
+  COUNT(*) AS upg_users_with_prior,
+  SUM(CASE WHEN p.prior_cover_end > u.upg_ct THEN 1 ELSE 0 END) AS old_still_valid_at_upgrade,
+  ROUND(SUM(CASE WHEN p.prior_cover_end > u.upg_ct THEN 1 ELSE 0 END)*100.0
+        / NULLIF(COUNT(*),0),2) AS pct_truncated
+FROM upg u JOIN prior p ON u.userid=p.userid;
+```
+- 关联：P047；T093；复现脚本 `scripts/query_max_upgrade_share_20261029.py`

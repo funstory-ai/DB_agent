@@ -27,7 +27,7 @@
   - 不要只用 `ordertype='trial'` 定义试用；不要把 `onetime_*` / `ordertype=code` 当试用；不要只用 `amountpaid>0` 定义付费
   - `amount` 与 `amountpaid` 单位/币种可能不同（P008）
   - `dwd_order_clean` 近窗过程表默认不用（P012）
-  - **Max 会员（`membership='max'` / `subscriptiontype LIKE 'max%'`）含大量「从已有会员补差价升级」的单子**：单笔 `amountpaid` 是差价、不是 Max 全价；统计 Max 全新年费/新增订阅必须剔掉存量升级用户（**P047**）
+  - **Max 会员（`membership='max'` / `subscriptiontype LIKE 'max%'`）含大量「从已有会员补差价升级」的单子**：单笔 `amountpaid` 是差价、不是 Max 全价；升级有显式标记 `ordertype='upgrade'`，统计 Max 全新年费/新增订阅必须剔掉存量升级用户（**P047**）；且升级单的 `cover_end=createtime+subscriptionday` 会截断旧会员剩余有效期（**P048**）
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）

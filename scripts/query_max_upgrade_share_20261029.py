@@ -66,3 +66,34 @@ WHERE COALESCE(isdeleted,0)=0 AND orderstatus='finished'
 GROUP BY bucket, subscriptiontype
 ORDER BY subscriptiontype, bucket
 """)
+
+
+# 3) ordertype='upgrade' 升级单里，旧会员在升级时仍有效（cover_end 被截断）的比例（P048 证据）
+run("升级单 cover_end 截断旧有效期（P048 证据）", """
+WITH upg AS (
+  SELECT userid, createtime AS upg_ct,
+         DATEADD(day, subscriptionday, createtime) AS upg_cover_end
+  FROM immdata.imt_subscriptiongoodsorder
+  WHERE COALESCE(isdeleted,0)=0 AND orderstatus='finished'
+    AND LOWER(membership)='max' AND subscriptionday>0
+    AND ordertype='upgrade' AND COALESCE(amountpaid,0)>0
+),
+prior AS (
+  SELECT o.userid,
+         MAX(DATEADD(day, o.subscriptionday, o.createtime)) AS prior_cover_end
+  FROM immdata.imt_subscriptiongoodsorder o
+  JOIN upg u ON o.userid=u.userid
+  WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
+    AND LOWER(o.membership)<>'max'
+    AND o.subscriptiontype IN ('monthly','yearly','two_yearly')
+    AND COALESCE(o.amountpaid,0)>0
+    AND o.createtime < u.upg_ct
+  GROUP BY o.userid
+)
+SELECT
+  COUNT(*) AS upg_users_with_prior,
+  SUM(CASE WHEN p.prior_cover_end > u.upg_ct THEN 1 ELSE 0 END) AS old_still_valid_at_upgrade,
+  ROUND(SUM(CASE WHEN p.prior_cover_end > u.upg_ct THEN 1 ELSE 0 END)*100.0
+        / NULLIF(COUNT(*),0),2) AS pct_truncated
+FROM upg u JOIN prior p ON u.userid=p.userid
+""")
