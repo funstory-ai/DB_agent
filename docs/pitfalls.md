@@ -109,15 +109,22 @@
 - 根因：过往任务中间过程表，非持续维护的正式口径
 - 正确做法 / 规避：**默认不使用**；订单/试用/付费一律以 `imt_subscriptiongoodsorder` + `amountpaid` 口径（P013）为准
 
-### P013 — 试用/付费以 `amountpaid` 为准；`onetime*` 兑换码不算试用
-- 发现日期：2026-08-12（纠错）；补充：2026-08-13
+### P013 — 付费和试用分开；兑换码算付费
+- 发现日期：2026-08-12（纠错）；补充：2026-08-13；2026-10-16 写明兑换码算付费
 - 涉及：`imt_subscriptiongoodsorder`
 - 正确做法 / 规避：
-  - **付费**：`orderstatus='finished' AND COALESCE(amountpaid,0)>0`
-  - **试用候选**：`finished AND COALESCE(amountpaid,0)=0`
-  - **排除淘宝等一次性兑换码**：`subscriptiongoodssnap` 中 `SubscriptionType` 以 `onetime` 开头（如 `onetime_3day` / `onetime_7day` / `onetime_yearly`），常见 `ordertype='code'` 且 `amountpaid` 为 0/NULL
-  - 识别示例：`CAST(subscriptiongoodssnap AS STRING) LIKE '%"SubscriptionType":"onetime%'`
-  - 不要只用 `ordertype LIKE '%trial%'`
+  - **付费**、**试用**是两类，不能混在一个数里。
+  - **付费** = `orderstatus='finished'`，并且下面任一成立：
+    1. `COALESCE(amountpaid,0)>0`（应用内付款）
+    2. **兑换码**（淘宝等站外买的会员。钱不在 `amountpaid` 里，订单金额经常是空）
+  - **兑换码**两条都要认，缺一就会漏：
+    - `LOWER(ordertype)='code'`
+    - 或 `subscriptiongoodssnap` 里 `SubscriptionType` 以 `onetime` 开头（`onetime_3day` / `onetime_7day` / `onetime_yearly`）
+    - 识别：`CAST(subscriptiongoodssnap AS STRING) LIKE '%"SubscriptionType":"onetime%'`
+  - **试用** = `finished` 且 `COALESCE(amountpaid,0)=0`，并且**不是**兑换码。常见 `ordertype` 为 `trial` / `iospay_trial` / `googleplay_trial`，`trialperioddays=3`。
+  - 兑换码金额为空，不是试用，也不是「0 元单」。0 元且不是兑换码的，才是试用。
+  - 不要只用 `ordertype LIKE '%trial%'` 定试用；也不要只用 `amountpaid>0` 定付费（会把淘宝兑换码漏掉）。
+  - 默认不必再问「兑换码算不算付费」。用户另定排除时才排除。
 
 ### P014 — 极高翻译次数常与「单设备多账户」重合（已核查）
 - 发现日期：2026-08-12；核查：2026-08-12
@@ -179,6 +186,7 @@
     - **没有账号** → 主体 = **device_id**；不要把未注册设备滤掉，也不要当成空 userid 丢掉
     - 禁止按设备把已有账号的人拆成多次转化
     - 付费分子仍只能是订单 userid（无账号无法成单）；分母按上面的人粒度
+  - **E 同一设备多行账号（2026-10-16，T070）**：`row_number` 去重必须有唯一决胜键。同一 `deviceid`、同一 `installtime`、多个 `userid` 时，只按 `installtime` 排序会每次留下不同账号。设备粒度「这台付过费」= 挂着的**任一**账号有付费单（P013），这台算 1。禁止只认随机留下的那个账号。反例：三台设备两行安装时间相同，累计付费在 52 / 50 / 49 之间跳，订单行数没变
 
 ### P019 — 抽样复核：目的是验 SQL，禁止为抽样重跑全量；指标随任务变
 - 发现日期：2026-08-13（任务一抽样实践）
@@ -188,8 +196,9 @@
   1. 把「分层标签」算在全量结果上，等价再跑一遍主报表
   2. 误把「翻译五类次数」写成通用硬性标准（转化率等任务并不适用）
 - 正确做法 / 规避：
-  - **目的**：抽几个样本，用**另一条更窄的路径**核对主 SQL 有没有算错；不是再产一份全量数
+  - **目的**：抽几个样本，用**另一条更窄的路径**核对主 SQL 有没有算错；**同时**判断交付数字是否合理；不是再产一份全量数
   - **核对字段随任务定**：次数任务对次数；转化率对「是否分母/分子归属正确」；漏斗对关键节点。禁止默认永远验翻译次数
+  - **数字合理性（与对拍并列，2026-10-12 补强）**：仅验 null/门闩/加总不够。须扫：假零（已闭合窗却 0%）、实验串组、量级/组间关系、相对上版离谱漂移。反例：T064 首版 W1 写死周上界，09/28 周 W1=`0.00` 非 null，门闩断言放过
   - **性能红线**：抽样不得重跑与主交付同级的全表/全 cohort 聚合。优先：从已交付 Excel/结果集抽行；或先抽轻量 userid 集合再只对样本独立重算
   - **N**：默认约 20（或用户指定）；几分钟～十余分钟量级可接受；若预估接近「再跑一遍大任务」必须改方案
   - **汇报**：只对话告知通过/不通过与异常样例；**不为抽样单独建表或另存结果文件**
@@ -219,7 +228,7 @@
 - 现象：需求为「近 90 天试用未付费」与行为匹配时，分析擅自把行为窗收成近 30 天 + 仅 `translate_page`，算出 ≈40% 匹配，并误导为原表/`ex_int_arg1` 质量差；业务同窗全事件验证 ≈95%+
 - 根因：把未声明的「活跃/性能收窄」写成完备性结论；低匹配先甩锅原表
 - 正确做法 / 规避：
-  1. **时间窗、事件范围、是否活跃、去重主体、是否含兑换码**等易分歧点：需求未写清 → **先问再查**
+  1. **时间窗、事件范围、是否活跃、去重主体**等易分歧点：需求未写清 → **先问再查**。兑换码算不算付费已由 P013 拍板，不必再问。
   2. 性能收窄（短窗、单事件、抽样）可以做，但必须标明「估计/非正式」，**禁止**当成正式完备性或字段质量结论
   3. 低匹配/异常：先核对自身 SQL 是否对齐需求，再怀疑原表
   4. 该 40%/42% 指标 **作废**
@@ -243,7 +252,7 @@
   - 真试用（amountpaid=0 且非 onetime、非 code）**不进**覆盖
   - 流失：`MAX(cover_end)` 落在观察窗且 `<NOW()`；刚续费/兑换码续期后出队
   - 「试用未付费」历史排除与覆盖同一集合（含 code）
-  - 与 P013 分工：P013 管试用**候选单**排除 onetime；P024 管**有效期/流失/是否曾获会员**
+  - 与 P013 同一套：付费含兑换码；试用是 `amountpaid=0` 且不是兑换码。本条只管有效期 / 流失。
 
 ### P023 — Databend 保留字不可作列名（如 `share`）
 - 发现日期：2026-08-14
@@ -401,6 +410,7 @@ WHERE rn = 1;
 - 反例类型（下次同类要先拦）：
   - 注册墙/登录墙 AB → 内连注册表当分母（P031）
   - 「新装转化」→ 分母用行为活跃 / `install_day` 脏字段，分子用 `installtime`
+  - 「新用户漏斗」→ 只用 P034/`is_new_user_today`，**新付费墙类却未套 P039**（2026-09-30 起默认必须剔，勿再问）
   - 「去某墙效果」→ 分母先滤「已触墙」再比转化（条件化掉处理）
   - 未跑满观察窗的 cohort 与已跑满的混报同一 N 日率
 - 与 P025 关系：P025 是「细节没写清要先问」；P032 是「写清了也要推演潜在偏倚」——两道都要过
@@ -420,6 +430,7 @@ WHERE rn = 1;
     3. `date_diff(day, userinfo.createtime, install_anchor) < 30`（挡老号迟补上报扮新装）
   - 转化分子（N 日首单付费）：lifetime 首笔现金 ∈ `[install_anchor − 5min, install_anchor + N)`
   - **禁止**：裸用 min(installtime) 当分母；用 `iospay_renew` 剔人；默认改成「新注册」口径（除非需求明确）
+- **与 P039**：设备级 P034 激活 cohort 上「剔重装老号」用 **P039（1 天缓冲）**，不要套本条的 30 天账龄当默认设备分母刀
 - 验证（2026-08）：安装前现金 gap≥30 天 29 人 **全剔**；≤5 分钟多数保留；干净分母 3 日首单 CVR ≈ **0.476%**
 - 复用 SQL：`sql/reports/query_new_install_user_filter_20260831.sql`
 - 关联任务：T021、T022、T023、T024
@@ -444,6 +455,7 @@ WHERE rn = 1;
 - **手工活跃/月留**（T029）：近 30 天活跃、自然月活、新装月留存若直扫 `user_behaviour`，须加同一 Rule A；定稿 `sql/reports/query_translate_page_monthly_retention_ruleA.sql`
 - 复用 SQL：`sql/reports/anomaly_t028_safari_new_install_activation.sql`；写仓：`sql/reports/dashboard_t028_ruleA_embed_kick_etl.sql`；board 样板字段见 `task8_mobile_os_name_board.sql`（`new_user` / `translated_new_user`）
 - 挂接：`docs/norms/query.md` 红线、`docs/norms/dashboard.md` §3.1；关联任务 T028、T029、T018
+- **与「真·新账号」区分**：`is_new_user_today=1` 是插件侧新装日，含重装老号（约 5%～7%，**P039**）。**新付费墙类主交付默认套 P039，不必再问**；一般看板/历史 AB 仍可主用本条纯 P034
 
 ### P035 — Databend `CREATE TASK` CRON 必须是 **6 段**（含秒）
 - 发现日期：2026-09-02（T025 写仓）
@@ -490,3 +502,193 @@ WHERE rn = 1;
   - 移动端行为身份以埋点 `device_id` 为准；登录账号仍走 `ex_int_arg1`（P006）。**不要**只用 P016 的 deviceinfo 路径覆盖移动端
   - 桌面端 deviceinfo 路径仍可用，但与移动端混在一个漏斗里时要分开说覆盖率
   - 与 **P018-D** 一起用：有账号归 userid，无账号用 device_id；移动端无账号比例更高，更不能丢掉 device_id
+
+### P038 — 中间表 / 看板 TASK：Cron 必须晚于上游日更（勿「今天跑了仍停在上上周」）
+- 发现日期：2026-09-28（T025 分业务周留存看板）
+- 涉及：下游留存/汇总 TASK × 上游周表/日表 TASK（例：`update_imm_translate_biz_firstuse_weekly_retention` ← `update_imm_device_event_by_utf8_week`）
+- 现象：
+  1. 今天周一、下游 TASK `last_success` / `update_time` 已刷新，但看板最新 cohort 仍是**上上周**
+  2. 最新一周有规模、**W1（及后续窗）全 0**，像「没算留存」
+- 举例（T025，北京 2026-09-28）：
+  - 上游周表 Cron：`0 2 0 * * 1` **UTC** ≈ 北京 **08:02**；当日 `max(week_start_day)=2026-09-21`
+  - 原下游留存 Cron：`0 0 6 * * 1` **Asia/Shanghai** = 北京 **06:00**（早于上游 ~2h）
+  - 06:00 全量重算时源表尚无 09-21 → 留存 `max_cohort=09-14` 且该周 W1=0；08:02 上游写入后下游要等下周一才再跑 → **永久落后约一周**
+- 根因：建看板只定了「每周一跑」，**没核对上下游 Cron 的绝对时刻与时区**（UTC vs Asia/Shanghai 差 8 小时，极易排反）
+- 正确做法 / 规避：
+  1. 写仓前列出链路：`源行为/订单 → 上游日/周表 TASK → 本看板中间表 TASK`，查 `SHOW TASKS` 的 **schedule + 时区**
+  2. 下游 Cron **必须晚于上游**（留足跑完缓冲；周更建议上游后 ≥1～2h，如上游≈周一 08:02 北京 → 下游 **10:00 上海**）
+  3. 验收新鲜度（与 P027 并列）：`MAX(下游业务周/日) = MAX(上游源表业务周/日)`；**禁止**只看 TASK Started / `update_time` 已变
+  4. 抽最新 cohort：未满窗允许 Wn=0，但**上一段已闭合窗**应对得上源（如最新周的上一周 W1>0）
+  5. 修调度时：改 Cron + **立刻全量重算一次**（否则要再等一周）；补丁样板 `sql/reports/dashboard_t025_retention_schedule_fix_20260928.sql`
+- 关联：P022（中间表+TASK）、P027（新鲜度）、P028/P035（TASK 写法/六段 cron）；`docs/norms/dashboard.md`「上下游调度」
+
+### P039 — 设备级 P034「新装/激活」≠ 真·新账号；重装老号须另剔（1 天缓冲）
+- 发现日期：2026-09-29（T045 / T018）；**2026-09-30 默认强制**：新付费墙类主交付默认剔，**不必再问**
+- 涉及：`user_behaviour.is_new_user_today`；`imt_userinfo.createtime`；`imt_deviceinfo.createtime` / `installtime`；激活锚点 `first_ts`
+- **适用范围（默认要剔，替代「每次先问」）**：
+  - 新付费墙 / 登录赠送额度（`login_ai_quota_gift_*`）/ 改版付费墙「对新用户」漏斗与转化
+  - 旧硬墙对照里谈**新用户触墙率**等（如 T046）
+  - 原则：**已拍板的新规则替代旧默认后，隔久也不要再问同一题**（场景会忘）
+- 现象：
+  1. 按 P034（`is_new_user_today='1'`）做新用户漏斗时，分母混入**重装/换机后登录老账号**
+  2. 误以为静默领取≈老号默认领；或以为剔老号后「立即登录%」应≈「领取%」
+- 举例 / 占比（T018 / T045）：激活约 **6%** 为老号设备；老号约占累计付费分子 **16%～21%**；日重装样约 **1k+/日**
+- 根因：`is_new_user_today` 是插件安装日维度；`deviceinfo` 时间常晚于行为，不能用来判老号；严格 `< act_ts` 误伤同会话注册
+- 正确做法 / 规避：
+  1. **新付费墙类只出剔老号一版** = P034（或任务约定新装）+ **本条剔老号**。**不要**再单独做含老号的全量对照（口径 A）。**禁止**每次再问要不要剔
+  2. **一般长期 AB/看板**（纯与历史 P034 对齐）：可主用未剔；一旦需求写成「新用户效果」则改用本条
+  3. 刀法：userid（`deviceinfo` ∪ 激活 `ex_int_arg1` ∪ 本题 claim）满足 `imt_userinfo.createtime < first_ts − 1 天` → 整台设备剔除
+  4. ❌ 勿用 deviceinfo 时间判老号；❌ 勿把 gift「立即登录%」当领取上界
+  5. 与 **P033**（账号级三过滤）勿混用
+- 复用：`query_paywall_ab_*excl_old*`；`query_login_ai_quota_gift_weekly_*`（`B_excl_old_acct` / v1333）
+- 关联：T018、T045、T046；`docs/norms/query.md`；表文档「勿想当然」
+
+### P040 — AB / 实验查数必须限定版本（勿把老客户端当实验流量）
+- 发现日期：2026-09-30（T047/T048；用户要求写入规范）
+- 涉及：`user_behaviour.version`；`ab_tag`；实验上线版本；Rule A（T028）之外的「脏分母」
+- 现象：
+  1. 很老版本（如 1.18 / 1.26 / 1.31）仍可带 `ab_tag`，但**未跑当期实验 UX**（配置/决策链不同），进 AB 分母等于掺集成/旁路流量
+  2. 字符串比较 `version >= '1.32.6'` **错误**：`'1.32.10' >= '1.32.6'` 为假，T018 旧滤会**漏掉约 4.9 万**合法 1.32.10 激活
+- 正确做法 / 规避（**AB 类默认强制，不必再问要不要限版本**）：
+  1. 写清 **实验起始版本**（优先）或 **近 N 个发布版本**白名单；任务文档与 SQL 注释写明
+  2. 用 **major/minor/patch 数值比较**或精确 `LIKE '1.32.%'` + patch 条件；❌ 禁止单靠字典序 `version >= 'x.y.z'`
+  3. 「污染」不只 Rule A：老版本 + 未声明版本上界/下界都算；Rule A 仍按 P034/T028 另剔（若本题需要）
+  4. 新付费墙/登录赠送等「对新用户」实验：与 **P039 剔老号**叠用（T048：版本≥起始 + 剔老号）
+  5. 版本说不清 → 查插件仓/任务文档实验上线版；仍不清再问用户（P025）
+- 复用：`query_paywall_ab_longterm_ver_excl_old_20260930.sql`（≥1.32.6 语义化 + P039）
+- 关联：T018、T047、T048；`docs/norms/query.md`
+
+### P041 — 核心月报版式对齐上月截图（标题加粗、指标分行）
+- 发现日期：2026-10-08（T058；用户给 08 月截图定样板）
+- 涉及：月报交付正文；不含任务核对表
+- 现象：粘成段、乱加粗数字、把「整体来看/注」拆碎，与上月飞书正文不一致
+- 正确做法 / 规避（**月报类强制**）：
+  1. **只加粗**大标题 + `1、`/`2、`/`3、`；正文数字不加粗
+  2. 段内指标各占一行、中间不空行；段与段之间空一行
+  3. 「整体来看…」「注：…」各一整段不拆
+  4. **段末汇总按当月重写**：结合环比翻转、结构矛盾、季节/大促；禁止换数字照抄上月套话
+  5. 主交付 `.docx`；细则 `docs/norms/query.md`「月报正文格式」
+- 关联：T031、T058
+
+### P042 — 行为点击→订单漏斗：订单时间可相对点击前放宽（默认 1 天）
+- 发现日期：2026-10-10（T062；用户确认写入规范）
+- 涉及：埋点点击/弹窗主按钮 → `imt_subscriptiongoodsorder` 归因；付费墙「去付费」等条件转化
+- 现象：埋点与订单落库有前后时差，严格 `订单 createtime >= 点击 ts` 会漏掉「先成单、点击略晚入库」或时钟偏差的真实付费
+- 正确做法 / 规避（**点击→订单类漏斗默认**）：
+  1. 归因下界默认：`订单.createtime >= 点击时间 − 1 天`；上界仍受观察窗 / asof 约束
+  2. 任务文档与 SQL 注释写明「P042 前放宽 1 天」；若业务要求严格因果再收紧并注明
+  3. 适用于：耗尽/墙「去付费」→付费、同类 CTA→成单漏斗；**不**改写无点击锚点的累计付费分母（总付费仍按原激活锚点窗）
+  4. 放宽只消化时差，**不是**把点击前任意久的老单算进漏斗；仍剔锚点前老客（T018）
+- 复用：`query_login_ai_quota_gift_weekly_ge1332_20261010.sql`（`exhausted_pay_then_paid`）
+- 关联：T062；`docs/norms/query.md`
+
+### P043 — 结论必须有证据；猜测不能当成答案
+- 发现日期：2026-10-15（T072；用户确认写入规范）
+- 涉及：一切对用户交付的判断（口径、原因、同步、源库、支付后台）
+- 现象：T072 把 Databend 副本 `MAX(createtime)` 停在凌晨说成「同步停更」，并进一步猜「源库是真没有新单还是同步没写过来」。本仓碰不到 MySQL；订单等业务表经 `H:\imt_data_synch` **北京每天 01:00** 日更，凌晨水位是正常现象。埋点仍在更新也不能证明业务表故障（另一条链路）。
+- 正确做法 / 规避（**强制**）：
+  1. 写成结论的句子，必须能指到证据：SQL 结果、表文档、插件代码、`H:\imt_data_synch` 调度、或用户原话。没有证据就写「未查到 / 不知道」，不要补一个听起来完整的原因。
+  2. 可以提出猜测，但必须同时写出三件：这是猜测、依据是哪几条已经看到的事实、还缺什么才能证实。禁止用猜测收束成定论。
+  3. 碰不到的系统不要判断它里面有什么：MySQL 源库、同步作业成败、支付后台。副本时间水位先对同步节奏，再谈异常。
+  4. 业务表日更（`imt_data_synch`，北京 `0 1 * * *`）与 `user_behaviour` 埋点不是同一条管道，不能互相证明对方停了。
+  5. **付费前出现过的事件不是付费原因。** 登录墙、去登录不是付费原因。归类只跟决定性的那一条事件；序列里另有个人页或升级入口，不得改标签。
+  6. 代码里的条件必须保留，不能说成所有人都会。没有耗时埋点，不要说某次请求很慢。
+  7. 反例（T070，2026-10-16）：登录墙、个人页被写成付费原因；「非会员且选 Pro、客户端剩余 &lt; 100 才拦」被说成所有非会员都会弹升级墙。
+- 关联：T072、T070；`.cursor/rules/no-ungrounded-claims.mdc`
+
+### P044 — 已交付的一个数字，必须来自同一次结果
+- 发现日期：2026-10-16（T070；用户确认写入）
+- 涉及：同一张表、同一个格子的多次查询；Excel 与重跑；设备粒度与账号粒度
+- 现象：10/12–16 新墙累计付费已交付 **52**（设备、真实激活日、含兑换码）。另一次用「付款时间 − 四舍五入的激活后小时」倒推出 58 个账号，被说成同一格。同一段代码重跑成 50、再成 49，又用新数替换 52。再用重跑里「没有耗尽墙的 42」去减 52。
+- 根因：解释某一个格子时换成了另一次查询、另一种粒度或另一个时间锚点
+- 正确做法 / 规避（**强制**）：
+  1. 对外解释某一个已交付数字，必须用**同一次查询、同一粒度、同一时间锚点、同一人群**
+  2. 重跑变了：先对出多出来或少掉的行，再决定是否替换已交付的数。输入没变而人数变了，先当取数错误
+  3. 禁止用另一次跑的子集去减旧总数
+  4. 禁止用倒推锚点的另一批人顶替这一格
+- 关联：T070；P018-E、P013
+
+### P045 — 追踪/同期群数据（留存/回访周/cohort）禁止写死；recurring 刷新须由数据推导
+- 发现日期：2026-10-26（T085 复盘；用户明确要求写入规范）
+- 涉及：新付费墙周漏斗（T077/T084/T085）等 recurring 快照；`export_t0xx_gift_weekly_funnel_*.py` 的 W1/留存；所有按 cohort/回访周出留存的刷新脚本
+- 现象：刷新到新 asof 后，新一周的 W1/留存永远是空。根因是回访周/回访人群被硬编码在某一批（如 `week_start_day = DATE '2026-10-12'`、`install_day < '2026-10-12'`、`key=='w_1010_1011'` 才显示 W1），刷新时回访周不随 asof 推进。
+- 举例：T077(10-20) 只给 10/10–11 算 W1；T084/T085 初版沿用同一硬编码，10/12–18 回访周已落在 asof 内却仍是空；10/19–25 那批回访周 10/26 起、未成熟，应留空（是对的）。
+- 占比：每刷一次就「丢」一整周已成熟的留存；历史周分母因剔老号层回填还会小幅收敛（<0.2%，见 MEMORY.md「分母漂移」）。
+- 根因：把「首版只有某批满 7 天回访，故只算它」的临时设定固化成了常量，而非「按各 cohort 各自回访周独立计算、回访窗完全落在 asof 内才收口」。
+- 正确做法 / 规避（**强制，对 recurring 追踪类刷新**）：
+  1. **留存/回访周必须由数据推导**：回访周 = 激活区间结束日的当周周一（`monday_on_or_after(end)`）；成熟度 = cohort 最后激活日 +7 天 ≤ asof（标准 W1 口径，允许最后一天尾段数小时未入库）；未成熟则留空（不是 0）。
+  2. **recurring 脚本不留任何写死的周/日期/切片 key**：asof、各 cohort 的回访周、显示条件都应是输入或派生，而非常量。
+  3. 与旧墙 AB 刷新手册一致：`query_paywall_ab_20260821.md` §下次刷新要求 `week_active` 的 `week_start_day` 上界「必须改成新的 `last_closed_week_start`，漏改会把刚闭合的留存算成 0%」。本坑是更彻底的版本——整段写死而非只漏改上界。
+  4. 与 P019 关联：P019 已把「T064 首版 W1 写死周上界」列为抽样合理性反例（已闭合窗却 0%）。本坑同根。
+  5. 与 P029/P038 同一原则：追踪类数据用滚动窗，禁止写死日期上界。
+  6. 验收：刷新后，刚闭合的那一周 W1 应非 null 且 >0；用 P019 合理性扫「已闭合窗却 0%」假零。
+- 关联：T077/T084/T085；P019、P029、P032、P038；旧墙 AB 刷新手册 `query_paywall_ab_20260821.md` §下次刷新
+
+### P046 — 订单币种匹配不到汇率表时，收入按「标准人民币价」计（不丢、不置零）
+- 发现日期：2026-10-26（T 未立项；用户明确要求写入规范）
+- 涉及：`imt_subscriptiongoodsorder.currency` × `immdata.exchangerates`；一切收入折算 / 人民币汇总
+- 现象：订单币种与 `exchangerates` 匹配不上时，若任其 `LEFT JOIN` 得 `NULL` 再乘汇率，该笔收入变 `NULL`/`0`，低估收入或漏单。
+- 根因（2026-10-26 核查，`imt_subscriptiongoodsorder` isdeleted=0）：
+  1. **大小写**：订单主币种存小写（`usd/cny/eur…`），汇率表大写（`USD/CNY/EUR…`），精确 join 直接失配——这是**最大头**（约 74 万订单行）。主修复是 join 用 `UPPER(o.currency)=e.currency`，**不是**加小写副本。
+  2. 部分真实 ISO 币种未维护（IQD/CZK/COP/MNT/RON/UAH/DZD/PKR/MAD/CRC/ARS/LKR/GEL/PYG/GHS/TZS/JOD/RSD/BOB/XOF/UZS/BGN/KES/AZN/XAF/BDT，共 26 个）。
+  3. 币种字段写着字符串 `'None'`（空值被串成字符串，上游数据质量问题，11,855 付费单 / 75,834 行）与两位国家码（`US/TW/HK/JP/KR…`，写错码、非真实币种）。
+- **正确做法 / 规避（强制）**：
+  1. **主路径**：`LEFT JOIN immdata.exchangerates e ON UPPER(o.currency) = e.currency`，取 `exchangerate`（基准 CNY，`CNY=1.0`；**注意 JPY/KRW 是「每 100 单位」**，其余多为每 1 单位）。
+  2. **匹配不到的币种，收入直接按「标准人民币价」（标准收入）计入，禁止把该笔置 `NULL`/`0` 丢掉。** 例：一个月会员标准价 ¥N，匹配不到的月会员订单直接按 ¥N 算收入。
+  3. 「标准收入」= 该商品的标准人民币标价（由产品定价给定，如月会员 ¥N / 年会员 ¥M），**不依赖订单自身币种的金额**；分析侧按商品类型（`subscriptiontype`/`membership`/`dateperiod` 等）引用对应标准 CNY 价。
+  4. **匹配不到的范围** = `UPPER(currency)` 仍不在 `exchangerates`（含 `'None'`、两位国家码、未维护真实币种）。其中 `'None'` 与两位码是上游写错，单列处理、不强行加汇率；26 个未维护真实币种按 `sql/reports/probe_add_missing_currency_rates.sql`（提案，手工维护表，禁止只读代跑）补。
+  5. **量级**：未维护的 26 个真实币种累计仅 ≈¥16.9k/595 天（≈¥28/天），近 90 天 ≈¥81/天；用标准价近似的误差可忽略。但 `'None'` 量更大（11,855 付费单），属数据质量、优先上游修，规范上仍按标准价计入而非漏掉。
+  6. 兑换码（`amountpaid` 为空，P013）不算「匹配不到汇率」的折算问题，仍按 P013 计为付费。
+- 示例 SQL（收入折算，匹配不到→标准价）：
+```sql
+-- std_cny_price 为该商品的标准人民币标价（按产品类型引用，此处以 CASE 示意）
+SELECT
+  o.currency,
+  COALESCE(e.exchangerate, 0)                          AS matched_rate,
+  CASE
+    WHEN e.exchangerate IS NOT NULL
+      THEN (o.amountpaid/100.0) * e.exchangerate        -- 匹配：本位币÷100×汇率
+    ELSE std_cny_price(o)                               -- 不匹配：标准人民币价
+  END                                                  AS revenue_cny
+FROM immdata.imt_subscriptiongoodsorder o
+LEFT JOIN immdata.exchangerates e
+       ON UPPER(o.currency) = e.currency
+WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
+  AND COALESCE(o.amountpaid,0) > 0;
+```
+- 关联：P008（单位/币种）、P013（付费含兑换码）、P043（结论有证据）；表文档 `docs/tables/immdata/exchangerates.md`；补齐提案 `sql/reports/probe_add_missing_currency_rates.sql`
+
+### P047 — Max 会员含大量「存量升级补差价」，不能当全新年费/新增收入
+- 发现日期：2026-10-29（用户明确要求写入规范）
+- 涉及：`imt_subscriptiongoodsorder`（`membership='max'` / `subscriptiontype LIKE 'max%'`）；Max 档收入 / Max 新增订阅 / Max 年费统计
+- 现象：
+  - 选 `membership='max'`（或 `subscriptiontype LIKE 'max%'`）当「Max 会员 / Max 年费」时，会把**从已有会员升级上来的人**算成「全新年费」买家；且单笔 `amountpaid` 只是**差价**，不是 Max 全价。
+- 举例 / 证据（2026-10-29 查 `imt_subscriptiongoodsorder`，`finished` + `COALESCE(isdeleted,0)=0`）：
+  1. **升级比例（保守下限）**：有 Max 付费单的 `userid` 共 **5,844**；其中 **1,645** 个在首笔 Max 单之前已有非 Max 会员付费单（`monthly`/`yearly`/`two_yearly`，`amountpaid>0`）= **28.15%**。未含「试用转正」「兑换码会员」「旧单已失效/换号」等，真实升级占比更高。
+  2. **金额是差价（非全价）**：`max_yearly` 付费单 `amountpaid` 跨度极大——最小 **¥1.15**、最大 **¥5,988,000**；含大量 ¥1~¥500 小额（13 单 ≤¥10、111 单 ≤¥100）。全新年费不可能 ¥1.15，这些只能是补差价。`max_monthly` 同理（最小 ¥0.93）。
+- 根因：升级逻辑 = 现有会员按「Max 价 − 当前剩余权益」补差价；订单 `amountpaid` 记录的就是差价，不是 Max 档全价。
+- 正确做法 / 规避：
+  1. **统计「Max 全新订阅 / 新增年费」须剔升级**：按 `userid` 判断「首笔 Max 单之前是否已有非 Max 会员付费/有效单」，是则归为「存量升级」，不计入「全新」。
+  2. **Max 收入别拿差价当全价累加**：单笔 `amountpaid` 是差价，直接求和既不等于「Max 年费全价 × 人数」也不等于真实新增 ARPU；要看 Max 档真实价值应按 **Max 标准定价**，而非用订单差价求和。
+  3. **区分两类**：首次成为会员即买 Max（无更早会员单）= 真·全新；从 `pro`/`monthly`/`yearly` 升级 = 补差价。两者人数与金额语义不同，禁止混成一个「Max 年费」数。
+  4. 与 **P013**（付费/试用分开、兑换码算付费）、**P046**（金额按标准价计，但本坑是「差价」语义、非币种问题）并列。
+- 示例 SQL（升级识别，只读）：
+```sql
+-- 升级自存量会员的 Max 用户：首笔 Max 单之前已有非 Max 会员付费单
+WITH max_first AS (
+  SELECT userid, MIN(createtime) AS first_max_ct
+  FROM immdata.imt_subscriptiongoodsorder
+  WHERE COALESCE(isdeleted,0)=0 AND orderstatus='finished'
+    AND membership='max' AND COALESCE(amountpaid,0)>0 AND userid IS NOT NULL
+  GROUP BY userid
+)
+SELECT COUNT(DISTINCT o.userid) AS upgraded_user_cnt
+FROM immdata.imt_subscriptiongoodsorder o
+JOIN max_first m ON o.userid = m.userid
+WHERE COALESCE(o.isdeleted,0)=0 AND o.orderstatus='finished'
+  AND o.membership <> 'max'
+  AND o.subscriptiontype IN ('monthly','yearly','two_yearly')
+  AND COALESCE(o.amountpaid,0) > 0
+  AND o.createtime < m.first_max_ct;
+```
+- 关联：T 待立项；复现脚本 `scripts/query_max_upgrade_share_20261029.py`
