@@ -15,6 +15,7 @@ Wk 留存由数据推导自动收口 P045 等）与 T077/T085/T090 完全一致�
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from collections import defaultdict
@@ -26,6 +27,11 @@ from openpyxl.styles import Font
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from db import query
+
+# ---- wf 硬门禁：交付前必须过抽样（设 WF_TASK 时强制；未过门直接退出） ----
+if os.environ.get("WF_TASK"):
+    import wf as _wf
+    _wf.require(os.environ["WF_TASK"], "sampled")
 
 ROOT = Path(__file__).resolve().parents[1]
 

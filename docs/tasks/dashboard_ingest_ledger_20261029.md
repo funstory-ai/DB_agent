@@ -2,7 +2,7 @@
 
 - **需求编号**: T095
 - **规范大类**: dashboard（涉及写仓建表 + 中间层 + 每日调度；本要求也见下方「与 dashboard 规范的偏差」）
-- **状态**: 进行中（阻塞：见「阻塞项」四条，缺一不能投产）
+- **状态**: 进行中（**P0：`imt_data_synch` _loader 因账本切版将在 10-30 断供**，见 B5）
 - **日期**: 2026-10-29
 - **定稿 SQL**: `sql/reports/dashboard_t095_ingest_ledger_20261029_etl.sql`（ETL 草案，供写仓同学执行）
 
@@ -69,11 +69,33 @@
 | # | 事项 | 性质 | 证据 / 依据 |
 |---|------|------|------------|
 | B1 | 向开发申请**生产只读 AK/SK**（专用子账号） | 待提供 | 现状 `SHOW STAGES` 仅 3 个 stage，无一指向该桶 |
-| B2 | 修复 **hourly/daily 聚合丢失 `trace_id` / `route_attempt_id`** | 后端 bug，阻塞级 | 同批数据：temp 原始 2/2 有值 → 同天 hourly 60 行两个键全为 0 |
+| ~~B2~~ | ~~修复 hourly/daily 聚合丢失 key~~ | **已解除** | 见下方「B2 已解除」 |
 | B3 | 请开发给路由账本补一层 **daily 聚合** | 需求申请 | 现只有 raw（一天数百小文件），跨境拉不可行；《账本变更说明》明确邀请提此需求 |
 | B4 | 确认 **UCloud 流量是否还会回来** | 业务确认 | 见上节，10-20 起掉至 ~200 行/天 |
+| **B5** | **改造 `imt_data_synch` loader：按天列举全部 `billing-ledger-v*.parquet`，不要写死 v2.1** | **P0，抢在 10-30 11:00 CST 前** | 见下方「追加：P0 同步断供」 |
 
-> B1 的安全提示：不要沿用 `deploy/Test/appsettings.json` 里那对测试凭据 —— 实测它能读取 `imt-prod` 前缀，本身即属越权，不适合也不能用于生产 ETL。
+### B2 已解除（原判有误，2026-10-29 更正）
+
+原先"聚合丢失关联键"的结论取自**测试环境**（同一天 temp 2/2 有值 → hourly 60 行两键全 0）。已用**生产**数据推翻：
+
+- 实测 `imt-prod/billing-ledger/hourly/2026/10/29/billing-ledger-v2.4-03.parquet`（27 列、68216 行）：
+  - `TraceId` 非空 **67714 / 68216（99.3%）**
+  - `RouteAttemptId` 非空 **52350 / 68216（76.7%）**
+- ⇒ 生产 v2.4 hourly **保留**两个关联键，接入后可正常 join 路由账本，**不再阻塞**。
+- 剩余待验证（低风险）：10-29 的 **daily** 文件是否同样保留（daily 次日才落盘）。
+
+### 追加：P0 同步断供（`H:\imt_data_synch`）
+
+`token_used_aw` 本身就是由该同步项目从同一 OCI 桶拉 parquet MERGE 进来的：
+
+- `imt_load/config.py:90-91` 硬编码 `TOKEN_USED_AW_S3_OBJECT_NAME` 默认 `"billing-ledger-v2.1.parquet"`，`external_load.py::_build_daily_key()` 拼成单文件 Key。
+- 生产 daily 现况：10/17–10/28 全是 v2.1（381–497 MB），且均在 **2026-10-29 12:06–12:17 CST 一次批量重跑**；`daily/2026/10/29/` 尚空。
+- 生产 hourly 10-29 已切换为 **v2.1×5（00–04）+ v2.4×5（03–07）并存** ⇒ `daily/2026/10/29/` 落盘后会有 **v2.1 与 v2.4 两个文件**。
+- ⇒ 影响：**10-30 11:00 CST** 那次 cron 只读 v2.1，**静默漏掉当天 v2.4 那一大半（不报错）**；**10-31 起**无 v2.1 → `RuntimeError` 彻底断供。
+- 连带已发现：`token_used_aw` **10-26 整天缺失**（10-24/25/27/28 有量，约 580–710 万行/天），需请写仓同学补跑。
+- 部署坑：README 明写 CI 不会更新 `ps@ps` 机器上的代码（git pull Permission denied），改完须**手工部署**。
+
+> B1 更正：原先提示"不要沿用 `deploy/Test/appsettings.json` 的测试凭据"有误 —— 那对 AK `ef52915…` 正是 `imt_data_synch` 在用的**生产同步凭据**。若走"复用现有同步通道"这条路，凭据现成可用；只有在为该 databend 实例**另建 external stage** 时，才建议申请专用只读子账号。
 
 ## 已知坑（写入 SQL 文件，执行前必读）
 
@@ -95,7 +117,9 @@
 | 落 ETL 草案（stage / DDL / COPY / TASK / 验收 / 排错） | `sql/reports/dashboard_t095_ingest_ledger_20261029_etl.sql` | ✅ |
 | PoC：跨境连通 + infer_schema 校准 + 计时 | SQL §1，**待写仓同学执行** | 阻塞 → 进行中 |
 | 拿到生产只读 AK/SK | 待开发提供（B1） | 阻塞 → 进行中 |
-| 聚合丢键修复上线 | 待后端修（B2） | 阻塞 → 进行中 |
+| 聚合丢键修复上线 | ~~待后端修（B2）~~ 生产实测未发生，**已解除** | ✅ 已解除 |
+| **loader 去 v2.1 硬编码** | 待写仓同学改 `imt_data_synch`（B5） | **阻塞 → P0** |
+| **补跑 10-26** | 待写仓同学 | **待办** |
 | 路由账本 daily 层 | 待后端加（B3） | 阻塞 → 进行中 |
 | UCloud 流量是否恢复 | 待业务确认（B4） | 阻塞 → 进行中 |
 | 建表 + TASK 投产 | 待 B1–B4 后 | ❌ 未开始 |

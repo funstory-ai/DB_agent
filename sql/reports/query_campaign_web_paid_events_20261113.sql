@@ -1,4 +1,4 @@
--- T097: UTC boundaries equal Beijing 2026-10-28 through 2026-11-12 inclusive.
+-- T115: UTC boundaries equal Beijing 2026-10-28 through 2026-11-12 inclusive.
 -- Page campaign is the URL UTM; purchase click trigger is the current URL campaign.
 -- Keep all hosts here for scope validation. Exclude non-production hosts in analysis.
 SELECT created_ts,event_name,campaign,trigger,site_host,

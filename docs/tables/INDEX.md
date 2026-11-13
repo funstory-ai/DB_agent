@@ -2,11 +2,13 @@
 
 > 由 `python scripts/sync_table_catalog.py` 自动生成（只同步 `immdata`）。
 > 先读 [OVERVIEW.md](OVERVIEW.md)，再打开单表文档；禁止凭印象引用字段。
+>
+> **2026-11-09 手工补录 `routing_ledger`**（新建表，见 T082）。⚠️ 当前只读账号下 `information_schema.tables` 只返回 80 张表、少于本索引，**暂勿直接跑同步脚本**（会把历史条目刷掉），详见 `docs/tables/README.md`。
 
 ## 统计
 
 - Schema：immdata
-- 表/视图合计：109
+- 表/视图合计：109（生成时口径；清单实际 112 行，含手工补录 1 行）
 
 ## 表清单
 
@@ -87,6 +89,7 @@
 | `imt_subscriptiongoodsorder` | BASE TABLE | 816496 |  | [immdata/imt_subscriptiongoodsorder.md](immdata/imt_subscriptiongoodsorder.md) |
 | `imt_subscriptionordersource` | BASE TABLE | 1502045 |  | [immdata/imt_subscriptionordersource.md](immdata/imt_subscriptionordersource.md) |
 | `imt_userinfo` | BASE TABLE | 6962515 |  | [immdata/imt_userinfo.md](immdata/imt_userinfo.md) |
+| `routing_ledger` | BASE TABLE | 126229234 | 2026-10-30 新建；路由逐请求台账，**网关 request_id ↔ token_used_aw 的唯一桥接表**，仅覆盖 10-29 起；见 P049 | [immdata/routing_ledger.md](immdata/routing_ledger.md) |
 | `stripe_churn_users_202603_202606_with_plan` | BASE TABLE | 13470 |  | [immdata/stripe_churn_users_202603_202606_with_plan.md](immdata/stripe_churn_users_202603_202606_with_plan.md) |
 | `stripe_users` | BASE TABLE | 13471 |  | [immdata/stripe_users.md](immdata/stripe_users.md) |
 | `t_admin_user_info_result_7886` | BASE TABLE | 147789 |  | [immdata/t_admin_user_info_result_7886.md](immdata/t_admin_user_info_result_7886.md) |

@@ -1,4 +1,4 @@
-"""T097: aggregate the two recorded query snapshots, without exposing identifiers."""
+"""T115: aggregate the two recorded query snapshots, without exposing identifiers."""
 import json
 from collections import Counter
 from pathlib import Path

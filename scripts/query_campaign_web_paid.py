@@ -1,4 +1,4 @@
-"""T097: run a read-only SQL file, retaining aggregate evidence locally."""
+"""T115: run a read-only SQL file, retaining aggregate evidence locally."""
 import argparse
 import json
 import os

@@ -12,6 +12,7 @@
 | `dws_*` | 汇总层 | 如用户首单 `dws_order_user_firsts` |
 | `ads_*` | 应用/报表层 | 现成指标快照 |
 | `imm_*` / `user_*_day` | 主题汇总、画像、日指标 | 看表文档粒度与类型 |
+| `token_used_aw` / `routing_ledger` | AW 账本（入账）/ 路由逐请求台账（上游原始用量） | **分别 ≈12.5 亿 / ≈1.26 亿行**，必须带时间窗；`routing_ledger` 仅 10-29 起，见 P049 |
 | `vw_*` / `imm_view_*` | 视图 | 先确认定义再引用 |
 | `tmp_*` / `t_*` / `temp*` / `test*` | 临时/一次性分析 | **默认不当正式口径** |
 
@@ -23,6 +24,7 @@
 | 设备 | 埋点 `device_id`；业务表 `deviceid` | 格式是否一致需抽样 |
 | 订单 | `imt_subscriptiongoodsorder.id`；清洗表 `order_id` | 付费用 `dwd_order_clean.is_paid_order` |
 | 结账会话 | `checkoutsessionid` / 表内 `id` | `created` 会话≠付费 |
+| 上游请求 / 路由尝试 | `routing_ledger.upstreamrequestid`（**网关 UUID**）、`routeattemptid`、`traceid` | 连账本用 `routeattemptid`；**不要用** `token_used_aw.businessid`（imt-api 自生成，与网关 UUID 零交集）。见 P049 |
 
 ## 转化类指标口径（P018，已确认）
 
@@ -43,9 +45,10 @@
 - **Google Workspace 按日看板**：读 `imm_workspace_daily_kpi` / `imm_workspace_daily_dim`（**勿**挂 90d 直查 `user_behaviour`，P022；ETL 见 task5）
 - **付费墙按日看板**：读 `imm_paywall_daily_kpi` / `imm_paywall_daily_wide_*`（**勿用** `ads_ab_paywall_*`、~~`imm_paywall_daily_dim`~~；ETL 见 task6）
 - **按天累计类看板选型**：先实测直查耗时；慢则日汇总中间表 + 北京日增量 TASK（样板：`imm_user_target_lan_stats` / Workspace 日表，P022）
+- **供应商网关逐请求对账（UCloud/AstraFlow vs 我方账本）**：必须经 `routing_ledger` 桥接 —— `网关.request_id = RL.upstreamrequestid → RL.routeattemptid = token_used_aw.routeattemptid`；**表名 `routing` 不含 "route" 子串，`LIKE '%route%'` 搜不到**；对比前必须逐条 JOIN 或剔除 `finish_reason=length` 上限幽灵行（P049）。`routing_ledger` 仅覆盖 2026-10-29 起，历史月份不可套用。
 
 ## 维护
 
-- 结构同步：`python scripts/sync_table_catalog.py`（仅 immdata）
+- 结构同步：`python scripts/sync_table_catalog.py`（仅 immdata）。⚠️ **2026-11-09 起暂勿直接跑**：当前只读账号下 `information_schema.tables` 只返回 80 张表，而 `INDEX.md` 收录 111 张，刷新会缩水；先确认权限/视图完整性。手工补录的「来源与用途」段脚本会保留。
 - 索引：[`INDEX.md`](INDEX.md)
 - 单表：[`immdata/`](immdata/)

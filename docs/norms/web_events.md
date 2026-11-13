@@ -151,6 +151,6 @@ ADS 中可同时存在具体维度和 `all` 汇总行；选择一个明确切片
 - `imm_data_dashboard/webdata/official_homepage_onboarding_not_upgrade_devices.md`：「口径」。
 - `imm_data_dashboard/webdata/onboarding_pageview_funnel.md`：「口径」。
 - 本仓 [T063 官网身份与 campaign 关联观察](../tasks/query_school_campaign_convert_20261010.md)、[T012 WebApp DAU](../tasks/anomaly_webapp_document_dau_aug2026.md)及[对应 SQL](../../sql/reports/anomaly_webapp_document_dau_aug2026.sql)。
-- 本次补全留档：[T096](../tasks/query_web_events_context_20261110.md)。
+- 本次补全留档：[T114](../tasks/query_web_events_context_20261110.md)。
 
 当新样本或埋点代码与历史定义不符，先记录目标事件、时间窗、字段样本及差异，再修正文档；不要将一个事件/时段的字段解释直接覆盖其它事件/时段。
