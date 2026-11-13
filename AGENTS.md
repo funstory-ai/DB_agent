@@ -9,6 +9,7 @@
 - 密码只在本地 `.env`；禁止写入代码、文档、Git。
 - 禁止臆造字段或按名字像就 join；用表前核 `docs/tables/`。
 - `user_behaviour`：必须对 `created_ts` 做范围过滤；禁止对时间列套 `DATE()`/`to_date()` 后再过滤。
+- **网站访问 / campaign / 来源**：先读 [`docs/norms/web_events.md`](docs/norms/web_events.md)。网站 PV 用页面访问事件；全站 UV 不能只数非空 `device_id` 或 INNER JOIN 设备表。`official_page_view` 的 source/medium 是 `ex_char_arg4/5`，referrer 域名是 `install_from`；不要套插件安装渠道。网页流量先看行为事件，业务归因表不是访问全集；查询 `webdata` 仍须明确范围授权。
 - **转化主体（P018）**：有账号归 `userid`，没有账号用 `device_id`；不要按设备把同一账号拆成多次转化。同一 `deviceid`、同一 `installtime`、多个 userid 时，去重必须有唯一决胜键；这台是否付过费看任一账号（P018-E）。
 - **已交付的格子（P044）**：解释某个已交付数字，必须用同一次查询、同一粒度、同一时间锚点。重跑变了先对差异。禁止用另一次跑的子集去减旧总数，禁止用倒推锚点的另一批人顶替这一格。
 - **移动端（P037）**：android/ios/ipados 的 `device_id` 大部分不在 `imt_deviceinfo`。结果里含移动端时，必须说明这个缺口，不要只用设备表覆盖。
@@ -22,7 +23,7 @@ Cursor 每轮自动加载 `.cursor/rules/`。**Codex 不会。** 本文件以外
 - **转化 / 漏斗 / 转化率**：有账号归 **userid**（同一账号多设备只算 1 人）；没有账号才用 `device_id`。按设备数转化，算错。同一设备多行账号见 P018-E：去重要有唯一决胜键；付过费看任一账号。
 - **已交付的格子（P044）**：同一个格子必须来自同一次查询。重跑变了先对差异，再决定是否替换。不要用另一次的子集去减旧总数。
 - **设备级新装（P034）≠ 真新账号**：`is_new_user_today` 含重装老号。**新付费墙类只出剔老号一版（P039，不必再问，也不要再附含老号全量）**；刀法 `userinfo.createtime < 激活−1天`；不要用 `deviceinfo` 时间判老号。
-- **AB / 实验须限版本（P040，不必再问）**：实验起始版或近 N 版；用 semver 数值比较，禁止字符串 `version >= 'x.y.z'`（会漏 `1.32.10`）；老客户端带 `ab_tag` ≠ 当期实验流量。
+- **插件 AB / 实验须限版本（P040，不必再问）**：实验起始版或近 N 版；用 semver 数值比较，禁止字符串 `version >= 'x.y.z'`（会漏 `1.32.10`）；老客户端带 `ab_tag` ≠ 当期实验流量。网站 AB 按网页 `ab_group` / 上线日期核对，勿因插件 `version` 为空剔除匿名访客，见 `docs/norms/web_events.md`。
 - **核心月报正文（P041）**：对齐上月截图版式；段末「整体来看 / 收入叙事 / 注」须按当月数据与季节重写，禁止换数字照抄上月。细则见 `docs/norms/query.md`「月报正文格式」。
 - **点击→订单漏斗（P042）**：CTA/去付费归因成单时，订单时间相对点击**默认前放宽 1 天**；不改累计付费锚点窗。
 - **移动端**：不要只用 `imt_deviceinfo` 覆盖 android/ios/ipados。

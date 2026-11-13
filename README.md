@@ -12,6 +12,8 @@ python scripts/db.py
 
 Agent 摘要：[`AGENTS.md`](AGENTS.md)。任务模板：[`docs/tasks/_TEMPLATE.md`](docs/tasks/_TEMPLATE.md)。
 
+网站浏览量、campaign 与流量来源：先读 [`网页事件上下文`](docs/norms/web_events.md)（PV/UV、匿名访客、UTM/referrer、WebApp 与 Onboarding）。网页事件可从 `immdata.user_behaviour` 查询；其它 schema 仍须明确范围授权。
+
 ## 工作重点
 
 详见 [`docs/workflow.md`](docs/workflow.md)：

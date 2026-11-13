@@ -12,11 +12,11 @@
 
 ## 来源与用途（手工维护）
 
-- **数据来源**：沉浸式翻译插件/客户端埋点行为流（最细粒度事件表）
+- **数据来源**：沉浸式翻译插件/客户端/网站埋点行为流（最细粒度事件表）
 - **同步方式**：持续写入；体量极大（百亿级），查询必须带时间与事件过滤
 - **更新频率**：近实时
-- **业务含义**：插件侧行为真相源：翻译页、浮球、字幕、弹窗、限额等
-- **建议粒度**：`device_id` × `event_name` × `created_ts`（事件行）
+- **业务含义**：行为明细：翻译页、浮球、字幕、弹窗、限额，以及官网/WebApp 页面访问等
+- **建议粒度**：事件行；身份字段按事件选择，网站匿名访问不要求 `device_id`，勿将设备 ID + 事件 + 时间当作通用唯一键
 - **主键 / 唯一键**：无业务主键；勿对全表 `COUNT(*)` / 无过滤扫描
 - **常用过滤**：`created_ts` **必须**用范围比较限时；按需 `event_name` 等
 - **性能（硬性）**：
@@ -27,9 +27,10 @@
 - **实体关系**：存在单账户多设备、单设备多账户；转化类指标需先定 user/device 口径与去重
 - **Workspace 相关事件（task5）**：前缀 `workspace_*`（如 `workspace_open` / `workspace_translate_click` / `workspace_translate_success` / `workspace_translate_fail` 等）；日更汇总见 `imm_workspace_daily_kpi`、`imm_workspace_daily_dim`
 - **付费硬墙（task6）**：日常触墙仅 `user_need_pro` 且 `trigger='freeUsageLimitModal'`。日更见 `imm_paywall_daily_kpi` / `imm_paywall_daily_wide_*`
+- **网站访问 / campaign / 来源**：先读 [`../../norms/web_events.md`](../../norms/web_events.md)。`official_page_view` 的 `site_host`/`trigger`/`ex_char_arg1` 是页面信息，`campaign`/`ex_char_arg4`/`ex_char_arg5` 是活动/source/medium，`install_from`/`ex_char_arg2` 是 referrer 域名/URL；匿名网页访客的 `device_id` 可为空，不能套插件设备全集或安装渠道口径
 - **勿想当然**：
   - `install_day` 可能出现 `1970-01-01`（占位），不能当真实安装日
-  - **`is_new_user_today='1'` = 插件侧「当日新用户」标记（安装日维度）**，**不等于**账号是新注册；重装/换机后登录老号仍可能为 1（P034 / **P039**）
+  - **插件事件中 `is_new_user_today='1'` = 插件侧「当日新用户」标记（安装日维度）**，**不等于**账号是新注册；重装/换机后登录老号仍可能为 1（P034 / **P039**）。网页事件的历史说明是首访标记，须按网页上下文另核
   - `user_type` 含 `anonymous` / `free` / 会员档位等，口径需先对齐业务
   - `platform_type` 除 desktop/mobile/tablet 外，可能混入 iPhone 机型字符串
   - `ex_char_arg*` / `ex_int_arg*` 含义随 `event_name` 变化，必须查表文档或埋点说明
