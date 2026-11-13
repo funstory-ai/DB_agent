@@ -16,9 +16,10 @@
 - **同步方式**：持续/批写
 - **业务含义**：细粒度 token 消耗
 - **建议粒度**：明细行
-- **常用过滤**：**必须**时间/用户强过滤
-- **关联建议**：先读字段再关联
-- **勿想当然**：禁止无过滤聚合；优先用汇总表若存在
+- **常用过滤**：**必须**时间/用户强过滤；北京日 = `date_add(hour,8,timestamp)`，WHERE 里不要对时间套 `to_date(...)`（全表扫被 kill），用粗 UTC `timestamp` 预过滤保分区裁剪，精确切分放 Python
+- **关联建议**：与供应商网关逐请求日志对账，必须经 `immdata.routing_ledger` 桥接 —— `网关.request_id = RL.upstreamrequestid → RL.routeattemptid = TU.routeattemptid`（P049）。**不要用 `businessid`**（imt-api 自生成 UUID，与网关 UUID 实测 119,176 条交集 0）。
+- **勿想当然**：禁止无过滤聚合；`cachedinputusage` 全为 0（imt-api 硬编码 `CachedInputUsage = 0`，缓存 token 已折进 `inputusage`）；`countername` 才是额度归属（Pro 订阅 `user_subs_ai_token_used_count_v2` / 流量包 `user_ai_package_used_count`）；**"服务" = `productline`，不是 `providername`**（后者是上游供应商）。
+- **成本口径**：本表是权威账本，逐条经 `routing_ledger` 验证与上游原始用量 **100% 相等**（T082），不要因汇总差异倒推「我方少记」；汇总前须排除网关侧 `finish_reason='length'` 的 max_tokens 幽灵行（P050）。
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）

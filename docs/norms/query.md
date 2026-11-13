@@ -119,6 +119,12 @@
 
 相对上月正文结构逐项对 Excel；表内无日活均值/峰值时用业务侧给定值；周活 / PDF / EPUB 上月未写则本月亦不展开。写段末前先列「本月 vs 上月：翻转点 / 季节因素」再落笔。
 
+### 系列化（2026-11-05 用户要求，自 202611 起强制）
+
+核心月报已立项为每月一期系列 `SERIES-MR`：**本节的正文流水线只是 S1**，交付正文不等于任务完成；还须进 `immdata` 做高维下钻、产出可行动痛点（S2 矛盾清单 → S3 数据库交叉下钻 → S4 痛点结论）。202610 已验收、按用户要求**不补分析**。
+
+完整 SOP、维度族、交付形态、期次台账与避坑清单见 [`docs/tasks/series_core_monthly_report.md`](../tasks/series_core_monthly_report.md)；本节只管正文版式，分析规范以主档为准，避免两处分叉。
+
 ## 样例任务
 
 task1 / task2（Excel cohort）、task3（平台/母语/deviceinfo 探查） → 现编号 T001–T003，文档见 `docs/tasks/README.md`  

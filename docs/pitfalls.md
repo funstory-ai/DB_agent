@@ -748,3 +748,49 @@ SELECT
 FROM upg u JOIN prior p ON u.userid=p.userid;
 ```
 - 关联：P047；T093；复现脚本 `scripts/query_max_upgrade_share_20261029.py`
+
+---
+
+### P049 — 供应商网关逐请求对账：必须经 `routing_ledger` 桥接，`businessid` 连不上
+- 发现日期：2026-11-09（T082；表 `immdata.routing_ledger` 建于 2026-10-30，1.26 亿行）
+- 涉及：`immdata.routing_ledger`、`immdata.token_used_aw`、UCloud AstraFlow 网关日志
+- 现象：
+  1. 表名是 **`routing`** 不是 `route` → `SHOW TABLES LIKE '%route%'` **搜不到它**，曾误判「库里没有 route 表」。必须 `SHOW TABLES FROM immdata` 列全表名。
+  2. `token_used_aw.businessid` 是 imt-api 自生成 UUID，与 UCloud 网关日志的 `request_id` 是**两套独立命名空间**，实测 11-02 当天 **119,176 条交集 0**（命中率 0.00%），无法逐条关联。此前「request_id 修复」= 我方 `traceid`/`routeattemptid` 填充率 0%→100%，**不等于双方 UUID 打通**。
+  3. 本表只覆盖 **2026-10-29 起**（10-29 03:47 ~ 11-08 15:59 持续增长），**不含 8 月及更早**，历史月份无法用它做逐请求桥接。
+- 举例 / 证据（2026-11-02 UTC，UCloud 一路）：
+  - `token_used_aw.routeattemptid` ∩ `routing_ledger.routeattemptid` = **118,406 / 118,406 = 100%**
+  - 网关 `request_id` ∩ `routing_ledger.upstreamrequestid` = **119,069 / 119,176 = 99.91%**
+  - 全窗 590,861 条三方齐全请求的 **input/output 逐条 100.00% 完全相等**（网关 = RL.raw = TU 入账）。
+- 根因：网关 UUID 只由 `routing_ledger.upstreamrequestid`（取自 response header，见 `upstreamrequestidsource` / `requestidstate`）保存；账本侧只认 `routeattemptid`。两把钥匙只有这张表同时持有。
+- 正确做法 / 规避：
+  1. 标准链路：`AstraFlow.request_id = RL.upstreamrequestid` → `RL.routeattemptid = TU.routeattemptid` → `inputusage/outputusage`。**不要用 `businessid`**。
+  2. `routing_ledger` 必须带 `startedat` 粗时间窗 + `providername` 过滤（UCloud 只是 12 个上游通道之一）。
+  3. 汇总前先逐条 JOIN（见 **P050**）；`upstreamrequestid` 非 100% 有值，补匹配可用 `upstreamrequestids`(JSON)。
+  4. 单表文档 [`docs/tables/immdata/routing_ledger.md`](tables/immdata/routing_ledger.md)；⚠️ 暂勿跑 `sync_table_catalog.py`（当前账号 `information_schema.tables` 只返回 80 张表，会把 111 张的索引刷掉）。
+- 示例 SQL（只读）：
+```sql
+SELECT rl.upstreamrequestid, rl.routeattemptid, rl.rawinputusage, rl.rawoutputusage
+FROM immdata.routing_ledger rl
+WHERE rl.providername = 'UCloud'
+  AND rl.startedat >= '2026-11-02 00:00:00' AND rl.startedat < '2026-11-03 00:00:00';
+-- 再按 routeattemptid 与 token_used_aw 逐条对齐
+```
+- 关联：P043 / P044（解释已交付数字前核对真正执行的口径）、P017（中台 key 不进 AW）、T082；交付 `output/route_join_recon_20261102_20261106.xlsx`。
+
+### P050 — 网关日志里的 max_tokens 幽灵行会造出假的 output 缺口，汇总前必须先逐条 JOIN
+- 发现日期：2026-11-09（T082）
+- 涉及：UCloud AstraFlow 网关逐请求日志 `completion_tokens` / `finish_reason`；`routing_ledger`、`token_used_aw`
+- 现象：网关日志含 `finish_reason='length'`、打满 **max_tokens 上限（128000 / 65536）** 的虚高行，且 `http_status_code=200`、`is_success=true`，但这些请求**在我方系统里根本不存在**。直接按「模型 × 日」汇总两方对比，会得出「我方 output 少记 22.9% / 每请求只记 72%」的假结论。
+- 举例：
+  - 全窗 597,903 条里 `finish_reason` = `stop` 597,655 / `length` **247** / 空 1；那 247 条 `completion_tokens` 只有两个取值：**218 条 = 128000、29 条 = 65536**。
+  - `≥65536` 共 **261 条（0.044% 请求）**：247 条 `length`（output 29,804,544）+ 14 条 `stop` 真实超长（67,373~120,592，output 1,199,610），合计 31,004,154 → **解释 94.5% 的双方 output 总差异（32,801,847）**。
+  - 铁证：我方 UCloud 专线 / `routing_ledger` / `token_used_aw` 全窗 output 最大仅 **23,086**，`≥10 万 = 0 行`；261 条大值行**全部**连不上 RL，而连上的 596,594 行里一条都没有。
+  - 注意分母：旧数 **87.5%** 的分母是「1,309 条未匹配行 completion 0.3227 亿」；**86.1% / 94.5%** 的分母是「双方总差异 0.3280 亿」，别混用。
+- 根因：网关把 `max_tokens` 上限当成实际 completion 上报（对方日志自己打的 `length` 标签），并非我方少记；聚合口径把「对方多出来、我方没有的整条请求」算进了分子。
+- 正确做法 / 规避：
+  1. 汇总对比前**先按 P049 链路逐条 JOIN**，或至少剔除 `completion_tokens >= 65536` / `finish_reason='length'` 的行；否则 0.044% 的行能把整体 output 拉偏 ~30%。
+  2. 逐条 JOIN 后残差为 0 才能下「账本无误」结论；只看汇总比例（out/in）会来回误判。
+  3. `finish_reason` **只存在于对方网关日志**：星图/月度账单是小时桶聚合无此列；`token_used_aw` 无此列；`routing_ledger` 的 `outcome`/`errorkind` 是路由执行结果，不是模型结束原因。
+- 已作废结论（别再据此自查或找 UCloud 核账）：「供应商多计 luna 输出」（T081/T082 早期）、「我方 output 少记 22.9%，要查 imt-api 落库」。
+- 关联：P049、P043、T082；交付 `output/ucloud_diff_coverage_breakdown.xlsx`。8 月异常形态不同（全月连续约 3 倍、非离散幽灵行），见 `output/ucloud_aug_backcheck_202608.xlsx`。

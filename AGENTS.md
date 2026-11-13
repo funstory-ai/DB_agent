@@ -50,3 +50,24 @@ Cursor 每轮自动加载 `.cursor/rules/`。**Codex 不会。** 本文件以外
 ## 入口
 
 上手：`docs/onboarding.md` · 工作流：`docs/workflow.md` · 表：`docs/tables/`
+
+## 硬流程门禁（wf，强制，不可跳过）
+
+> 纯靠记忆/散文遵守不可靠。门禁由 `scripts/wf.py`（SQLite 状态机，**失败即拒**）与导出脚本内的 `wf.require` 强制，不由模型自觉。详见 `docs/workflow/HARD_WORKFLOW.md`。
+
+每个需求**必须**走以下状态机（顺序不可跳级）：
+
+```
+briefed → caliber(口径) → queried(写SQL) → sampled(抽样复核) → delivered(交付) → audited(验收)
+```
+
+模型开查前的**强制动作**：
+
+1. 新需求先 `python scripts/wf.py open T### --cat <大类> --title "..." --doc docs/tasks/<文件>.md`；已有归档则 `wf open` 补注册。
+2. 写任何 SQL / 跑库前，任务文档 `## 口径` 的**时间窗**必须已填（没有就先写，不许"先跑再看"）。
+3. 调用 canonical 导出脚本（`export_monthly_report.py` / `export_gift_weekly_funnel.py` 等）交付 Excel 时，**必须**带环境变量 `WF_TASK=T###`；未过 `sampled` 脚本会非零退出、跑不出文件。
+4. 交付前必须完成 P019 抽样，并在文档 `## 抽样复核` 写清证据；然后 `wf sampled T###`。
+5. **只有 `wf audit T###` 才是"完成"权威**。禁止在没走完上面步骤时自称"已完成 / 已交付 / 验收通过"。状态机之外没有完成。
+6. 改动 `sql/reports/` 或任务文档后，跑 `python scripts/wf_audit.py` 自检；审计报 `done_without_sampling` / `missing_*` 即未过关。
+
+越权/跳步：`wf` 会直接抛错退出，不要绕过、不要重跑绕过。审计发现的重复编号（如 T079）、缺口径历史任务，按 `docs/tasks/_INVENTORY_20261110.md` 的"待修项"处置。
