@@ -6,7 +6,7 @@
 
 | 层级/前缀 | 含义 | 使用建议 |
 |-----------|------|----------|
-| `user_behaviour` / `user_access_log` | 插件埋点明细 | 必须限时间+事件；优先用汇总/DWD |
+| `user_behaviour` / `user_access_log` | 行为/访问明细；网站事件见 `user_behaviour` | 必须限时间+事件；优先用已核口径的汇总/DWD |
 | `imt_*` | 业务库同步（账号/设备/订单/归因） | 注意 `isdeleted`；ID 字段命名不统一 |
 | `dwd_*` | 明细清洗层 | 订单分析优先 `dwd_order_clean` |
 | `dws_*` | 汇总层 | 如用户首单 `dws_order_user_firsts` |
@@ -34,10 +34,11 @@
 ## 查数选表捷径
 
 - **活跃/翻译行为**：`user_behaviour`（必限时、不对时间套函数）；账号并表用 **deviceinfo + `ex_int_arg1` 双路径（P016）**；或日汇总 `user_translate_*`（注意类型）
+- **网站 PV / UV、campaign 流量与来源**：先读 [`../norms/web_events.md`](../norms/web_events.md)；从 `user_behaviour` 的网页事件选取，勿用插件设备/账号覆盖全站访客。其它 schema 的派生表仍须范围授权与只读核验
 - **按语言拆分**：设备母语用 `imm_device_native_language`（target 优先 + interface fallback；上游 `imm_user_target_lan_stats`）。账号级：userid 下按语言 **SUM(cnt)**，取最大者为母语（P020）
 - **付费/会员/试用**：`imt_subscriptiongoodsorder`（`amountpaid` 口径）；**不要用** `dwd_order_clean` / `dws_order_user_firsts`（P012 过程表）
 - **账号/设备档案**：`imt_userinfo`、`imt_deviceinfo`（join 前对 userid+deviceid 去重，P015）
-- **归因**：`imt_subscriptionordersource`、`imt_campaigninfo`
+- **业务侧归因 / 下单来源**：`imt_subscriptionordersource`、`imt_campaigninfo`（不是全站流量日志；网页 campaign/source/medium 从事件取，见上述网页上下文）
 - **团队租户用量看板**：`imt_teamusagedaily` + `imt_teamtenant`（日用量须 `SUM(usage)`，见 task4）
 - **Google Workspace 按日看板**：读 `imm_workspace_daily_kpi` / `imm_workspace_daily_dim`（**勿**挂 90d 直查 `user_behaviour`，P022；ETL 见 task5）
 - **付费墙按日看板**：读 `imm_paywall_daily_kpi` / `imm_paywall_daily_wide_*`（**勿用** `ads_ab_paywall_*`、~~`imm_paywall_daily_dim`~~；ETL 见 task6）
