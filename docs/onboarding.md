@@ -34,7 +34,7 @@ copy .env.example .env
 
 1. 读 [`docs/workflow.md`](workflow.md)（约 1 分钟）。
 2. [`docs/norms/README.md`](norms/README.md) 判定一个大类：`query` / `anomaly` / `dashboard` / `audit`。
-3. 在 [`docs/tasks/README.md`](tasks/README.md) 占下一号 `T###`，复制 [`tasks/_TEMPLATE.md`](_TEMPLATE.md) 建任务文档。
+3. 在 [`docs/tasks/README.md`](tasks/README.md) 占下一号 `T###`，复制 [`tasks/_TEMPLATE.md`](tasks/_TEMPLATE.md) 建任务文档。
 4. 用表前核 [`docs/tables/`](tables/)；相关坑读 [`docs/pitfalls.md`](pitfalls.md)。
 5. 交付：定稿 SQL → `sql/reports/`；抽样按 P019；验收后更新任务索引。
 
@@ -54,8 +54,20 @@ copy .env.example .env
 | 写仓 | 可在本仓 **写** ETL 脚本；**执行**用写仓账号，不在本仓只读账号上跑 |
 | 只看结果 | 读 `docs/tasks/` 与 `sql/reports/`，不必连库 |
 
+## 用 Stripe 数据（只读直读，不落库）
+
+本项目除 `immdata` 外唯一允许直读的外部源是 **Stripe**：用受限只读 Key 经 API 按需拉取，缓存到 `output/`，在内存里和 `immdata` join，**不做同步、不写库**。要连 Stripe 的新同事：
+
+1. 找管理员要一个**只读** RAK Key（`rk_live_...`，只勾 Read），写入本地 `.env` 的 `STRIPE_API_KEY`（见 `.env.example`）。
+2. 读 [`docs/stripe/README.md`](stripe/README.md)：连接方式、权限矩阵、和我方表的关联键、已知坑、可复用脚本。
+3. 字段以 [`docs/stripe/resources.md`](stripe/resources.md) 为准（2026-11-18 实测，14 资源可读 / 3 个 403）。
+4. 自检：`python scripts/stripe_client.py` 应打印 `balance GET status: 200`。
+
+> 同样的门禁照走：占 `T###`、写清时间窗、P019 抽样、`wf audit`。Stripe 只覆盖它自己渠道的订单，不能当全量收入。
+
 ## 还要读的入口
 
 - 工作流：[`workflow.md`](workflow.md)
 - Agent 摘要：[根目录 `AGENTS.md`](../AGENTS.md)
 - 表目录：[`tables/README.md`](tables/README.md)
+- **Stripe 直读：[`stripe/README.md`](stripe/README.md) · 字段目录 [`stripe/resources.md`](stripe/resources.md)**

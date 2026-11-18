@@ -1,3 +1,6 @@
 databend-driver>=0.25.0,<0.28
 python-dotenv>=1.0.0
 openpyxl>=3.1.0
+# T119 Google Ads API producer（凭证在 config/google-ads.yaml，不进 git）
+google-ads>=32.0.0
+google-auth-oauthlib>=1.0.0

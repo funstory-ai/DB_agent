@@ -1,0 +1,15 @@
+---
+description: Stripe 直读数据的凭证、只读纪律、关联键与已知坑（T124~T128）
+alwaysApply: true
+---
+
+# Stripe 直读（用户明确要求时才用）
+
+- **唯一外部源**：除 `immdata` 外，本项目唯一允许直读的外部源是 Stripe；**不落库、不做同步任务、不建定时任务**。
+- **凭证**：只用本地 `.env` 的 `STRIPE_API_KEY`（受限只读 RAK `rk_live_...`，只勾 Read）。**禁止**把 Key 写进代码/文档/Git/对话；403 错误体会回显 Key 尾缀，不要原样外贴。
+- **客户端**：只用 `scripts/stripe_client.py`（唯一网络出口 GET/list，429 退避，游标分页）；不要另写 HTTP 调用，不要发 POST/DELETE/UPDATE。
+- **文档**：连接/权限/关联键/坑 `docs/stripe/README.md`；资源与字段（实测 14 可读、checkout/sessions 等 3 个 403）`docs/stripe/resources.md`。用表/字段前先核，禁止臆造 Stripe 字段。
+- **关联键**：Invoice `in_*` → `imt_subscriptiongoodsorder.invoiceid`（主桥，映射率 99.9%）；`sub_*`→`subscriptionid`；`price_*`→`priceid`；Customer email→`imt_userinfo.email`；退款/争议走 `invoice→payment_intent→charge→refund/dispute`（我方无 payment_intent）。
+- **金额/时区**：金额单位是**分**；时间戳 UTC 秒，北京日 +8h。
+- **坑**：`status=paid` 且 `amount_paid=0` 是试用开通，不算收入；`payment_failed` 的 invoice 我方库没有、接不上行为；相对取消日的行为曲线受全局时间趋势污染，必须用流失vs对照**同锚点日配对**看人均强度（T128）；两张 `stripe_users`/`stripe_churn_users_*` 是僵尸表（文档在、库里无），勿查。
+- **流程**：Stripe 分析同样走 `scripts/wf.py` 门禁 + P019 抽样 + P043 猜测标注；Stripe 只覆盖自身渠道订单，非全量收入；已交付数字按 P044 走原查询。

@@ -1,0 +1,32 @@
+# Google Ads API 凭证模板（复制为 config/google-ads.yaml 后填写；该文件已被 .gitignore 排除）
+#
+# ⚠️ 2026-09-09 起 developer token 已停用。本模板【不填】developer_token：
+#    API 访问级别由「生成下面这些 OAuth 凭证的那个 GCP 项目」决定。
+#    google-ads Python 库 32.0.0+ 已移除「必须配置 developer_token」的校验。
+#
+# 准备顺序：
+#   1) GCP 控制台建项目 → API 库启用 Google Ads API
+#   2) 同一项目里创建 OAuth 2.0 客户端（类型：桌面应用），下载 JSON
+#   3) 跑一次下面命令生成 refresh_token（会开浏览器授权，需对 462-389-6831 有读权限的 Google 账号）：
+#      F:/python312/python.exe scripts/fetch_google_ads_api.py --make-refresh-token --client-secret <下载JSON路径>
+#   4) 在 GCP 控制台 Google Ads API「概览」页申请 Explorer 访问级别（多数自动批准；Test 级只能查测试账号）
+#   5) 填好本文件后验证：
+#      F:/python312/python.exe scripts/fetch_google_ads_api.py --check
+#      F:/python312/python.exe scripts/fetch_google_ads_api.py --discover
+#
+# 服务账号替代方案：用 json_key_file_path 指向服务账号 JSON key；但通常需要
+#   Google Workspace 域 + domain-wide delegation（impersonated_email），否则报 NOT_ADS_USER。
+#   独立账号 / 小团队优先用上面的桌面 OAuth 流程。
+
+client_id: "YOUR_CLIENT_ID.apps.googleusercontent.com"
+client_secret: "YOUR_CLIENT_SECRET"
+refresh_token: "YOUR_REFRESH_TOKEN"
+
+# ⚠️ 2026-11-16 实测本项目【必须填】：4623896831 是 MCC 经理账号，自身 campaign=0，
+#    数据在 4 个启用子账号里。不填这一行，查子账号会报
+#    PERMISSION_DENIED / "manager's customer id must be set in login-customer-id header"。
+#    填 MCC 自身 ID（纯数字、无横线）；普通独立账号才留空。
+login_customer_id: "4623896831"
+
+# 客户端库必需，勿删：
+use_proto_plus: true

@@ -1,5 +1,7 @@
 # `immdata.stripe_users`
 
+> ⚠️ **僵尸表（2026-11-18 实测）**：本文档仍在，但**库里该表已不存在**（`SHOW TABLES FROM immdata LIKE 'stripe%'` 无结果）。**不要写 SQL 查它**。Stripe 数据请走只读 API 直读，连接与字段见 [`docs/stripe/README.md`](../../stripe/README.md)。下方字段仅作历史留档。
+
 ## 基本信息
 
 | 项 | 内容 |

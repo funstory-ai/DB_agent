@@ -38,5 +38,7 @@ Agent 摘要：[`AGENTS.md`](AGENTS.md)。任务模板：[`docs/tasks/_TEMPLATE.
 | `scripts/sample_validate_task1.py` | 任务一分层抽样交叉验证 |
 | `scripts/anomaly_checks.py` | 异常检查脚本（`--check p014|p015|all`） |
 | `.cursor/rules/` | Agent 规范 |
+| `docs/stripe/` | **Stripe 直读**：连接/权限/关联键/坑 + 14 资源实测字段目录 |
+| `docs/guides/` | 一次性操作指引（Google Ads 首次配置、飞书表交接等） |
 
 表结构刷新：`python scripts/sync_table_catalog.py`

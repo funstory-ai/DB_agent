@@ -47,9 +47,13 @@ Cursor 每轮自动加载 `.cursor/rules/`。**Codex 不会。** 本文件以外
 - 清零试错：`sql/adhoc/`、过期 `output/`、`_tmp_*.py`。抽样结果不落文件。
 - 未对照需求逐项验收，不得称完成。
 
+## Stripe 直读（只读，不落库）
+
+本项目除 `immdata` 外唯一允许直读的外部源是 **Stripe**（用户明确要求时）：只读 Key 经 API 拉取 → 缓存 `output/` → 内存 join `immdata` → 出结论。**不建同步任务、不写库、Key 只在 `.env`、不打印**。连接/权限/关联键/坑见 `docs/stripe/README.md`，资源字段（实测 14 可读 / 3 个 403）见 `docs/stripe/resources.md`，客户端只用 `scripts/stripe_client.py`（唯一网络出口 GET/list）。Stripe 分析同样走 wf 门禁；Stripe 只覆盖其自身渠道订单，不能当全量收入；已交付数字按 P044 走原查询。
+
 ## 入口
 
-上手：`docs/onboarding.md` · 工作流：`docs/workflow.md` · 表：`docs/tables/`
+上手：`docs/onboarding.md` · 工作流：`docs/workflow.md` · 表：`docs/tables/` · **Stripe：`docs/stripe/README.md`**
 
 ## 硬流程门禁（wf，强制，不可跳过）
 

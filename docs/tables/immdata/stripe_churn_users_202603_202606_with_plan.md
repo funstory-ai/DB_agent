@@ -1,5 +1,7 @@
 # `immdata.stripe_churn_users_202603_202606_with_plan`
 
+> ⚠️ **僵尸表（2026-11-18 实测）**：本文档仍在，但**库里该表已不存在**。不要写 SQL 查它；Stripe 取消/流失数据走只读 API 直读，见 [`docs/stripe/README.md`](../../stripe/README.md) 与任务 T127/T128。下方字段仅作历史留档。
+
 ## 基本信息
 
 | 项 | 内容 |
