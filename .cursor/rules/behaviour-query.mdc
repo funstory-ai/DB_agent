@@ -1,11 +1,19 @@
 ---
-description: user_behaviour 查询性能硬约束
+description: user_behaviour 查询性能硬约束与网页流量上下文
 alwaysApply: true
 ---
 
 # user_behaviour 查询约束
 
 宽表，直接查/并表极慢。
+
+## 网页访问 / campaign / 流量来源
+
+- 涉及官网、网站 PV/UV、WebApp 访问、UTM、referrer、网站下载或 Onboarding，先读 `docs/norms/web_events.md`。
+- `official_page_view` 是网页访问，`translate_page` 是插件网页翻译；不要混用。网站 UV 不能默认只数非空 `device_id` 或 INNER JOIN 设备表。
+- 官网访问 source/medium 为 `ex_char_arg4/5`，referrer 域名为 `install_from`；campaign 业务表/订单来源快照不是访问全集。扩展字段含义须按事件和时段核对。
+- 下方 P016/P018 的账号/设备关联约束适用于相应用户转化任务；不能据此过滤匿名网页访问。网站 AB 按 `ab_group` / 上线日期核对，不用插件版本过滤匿名访客。
+- 默认只查 `immdata`；本文档介绍 `webdata.*` 的历史链路不等于跨 schema 查询授权。
 
 ## 必须
 

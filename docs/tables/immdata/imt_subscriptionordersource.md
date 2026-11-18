@@ -21,6 +21,7 @@
 - **常用过滤**：`COALESCE(isdeleted,0)=0`
 - **关联建议**：`checkoutsessiontableid` → `imt_checkoutsession.id`；`userid` → 用户；`deviceid` → 设备
 - **勿想当然**：`extenddata` JSON 内可能有 `orderFrom` / `abField`，解析前先抽样
+- **网站流量边界**：本表是下单来源快照，不是网页访问日志；不能据此推算未下单访客的 campaign 流量或全站来源分布。网页访问与订单归因分开定主体、关联覆盖和触达窗口，见 [`网页上下文`](../../norms/web_events.md)
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）

@@ -26,6 +26,7 @@
 | 选表 | `docs/tables/OVERVIEW.md` |
 | 埋点/墙/实验对不上 | [extension.md](extension.md)：先 `git pull` `F:\extension` 再查插件 |
 | **主要翻译业务事件/合成口径** | [translate_biz.md](translate_biz.md)（网页/PDF/电子书/悬浮/划词…；跨 query/dashboard 复用） |
+| **网站访问 / PV、UV / campaign / UTM / referrer** | [web_events.md](web_events.md)（网页事件字段、匿名访客、来源归因、WebApp 与 Onboarding；跨大类复用，非新任务大类） |
 | 留档清零 + **定稿收尾（过程补丁并入后删除）** | `docs/tasks/README.md`、`.cursor/rules/archive-cleanup` |
 | **需求编号 T### + 命名/索引** | [`docs/tasks/README.md`](../tasks/README.md)「需求编号与命名」；开查占号、收工改状态 |
 

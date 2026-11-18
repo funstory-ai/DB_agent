@@ -21,6 +21,7 @@
 - **常用过滤**：`COALESCE(isdeleted,0)=0`
 - **关联建议**：`deviceid`；勿直接当「安装唯一归因」除非已去重规则
 - **勿想当然**：空 UTM 很常见；`translated=1` 不代表付费
+- **网站流量边界**：本表是设备侧业务归因，不是网站访问全集；不能先用本表圈设备再代表某 campaign 的全站 PV/UV。事件侧 `campaign` / `ex_char_arg4/5` 与本表 `utmcampaign` / `utmsource` / `utmmedium` 须核对覆盖与时点，不能默认等价，见 [`网页上下文`](../../norms/web_events.md)及 T063
 
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）
