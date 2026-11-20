@@ -1,13 +1,13 @@
-# `immdata.imm_device_by_utf8_week_geo`
+# `immdata.imm_paywall_daily_wide_hit`
 
 ## 基本信息
 
 | 项 | 内容 |
 |----|------|
-| 全名 | `immdata.imm_device_by_utf8_week_geo` |
+| 全名 | `immdata.imm_paywall_daily_wide_hit` |
 | 类型 | BASE TABLE / FUSE |
-| 约行数 | 823778665 |
-| 创建时间 | 2025-01-21 02:31:05.993820 |
+| 约行数 | 122576 |
+| 创建时间 | 2026-08-20 04:45:20.442890 |
 | 表注释 | （待补充） |
 
 ## 来源与用途（手工维护）
@@ -27,17 +27,20 @@
 
 | # | 字段 | 类型 | 可空 | 默认 | 注释 |
 |---|------|------|------|------|------|
-| 1 | `week_start_day` | `date` | YES |  |  |
-| 1 | `device_id` | `varchar(16382)` | YES |  |  |
-| 1 | `install_week_start_day` | `date` | YES |  |  |
-| 1 | `real_geo` | `varchar(16382)` | YES |  |  |
-| 1 | `target_language` | `varchar(16382)` | YES |  |  |
-| 1 | `interface_language` | `varchar(16382)` | YES |  |  |
+| 1 | `dt_bj` | `date` | YES |  |  |
+| 1 | `install_from` | `varchar(16382)` | YES |  |  |
+| 1 | `platform_type` | `varchar(16382)` | YES |  |  |
+| 1 | `campaign` | `varchar(16382)` | YES |  |  |
+| 1 | `lang_bucket` | `varchar(16382)` | YES |  |  |
+| 1 | `ab_tag` | `varchar(16382)` | YES |  |  |
+| 1 | `exp_group` | `varchar(16382)` | YES |  |  |
+| 1 | `paywall_uv` | `bigint` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
 ## 样例核对（可选）
 
 ```sql
-SELECT * FROM immdata.imm_device_by_utf8_week_geo LIMIT 20;
+SELECT * FROM immdata.imm_paywall_daily_wide_hit LIMIT 20;
 ```

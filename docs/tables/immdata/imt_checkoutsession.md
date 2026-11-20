@@ -58,6 +58,7 @@
 | 1 | `iosoriginaltransactionid` | `varchar(16382)` | YES |  |  |
 | 1 | `trackercampaign` | `varchar(16382)` | YES |  |  |
 | 1 | `googleplaytransactionid` | `varchar(16382)` | YES |  |  |
+| 1 | `billingsystem` | `varchar(16382)` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 

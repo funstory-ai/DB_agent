@@ -27,6 +27,26 @@
   5. `upstreamrequestid` 并非 100% 有值，须看 `requestidstate`；ID 来源看 `upstreamrequestidsource`（`header:x-request-id` / `header:X-Infron-Request-Id` / `header:x-ds-trace-id` / `header:apim-request-id`，多数为 NULL）。`upstreamrequestids` 是 JSON，含多个来源 ID，可用于补匹配。
   6. `outcome` / `httpstatuscode` / `errorkind` / `routereason` 是**路由执行结果**（成功/取消/上游错误/传输错误/解析失败），**不是模型生成的 `finish_reason`**。本表**没有** `finish_reason` 列；`finish_reason` 只存在于供应商 AstraFlow 网关日志里。
 
+### 字段速记（手工维护，放在自动段外，避免被同步冲掉）
+
+| 字段 | 说明 |
+|------|------|
+| `routeattemptid` | 连 `token_used_aw.routeattemptid` |
+| `actualupstreamresourceid` | 实际模型名 |
+| `providername` | 上游通道（UCloud 只是其中一路） |
+| `productline` | 翻译服务类型 |
+| `startedat` | **唯一时间字段，必须带窗** |
+| `outcome` | success / cancelled / upstream_error / transport_error / parse_error |
+| `rawinputusage` | 上游原始 input（**已含 cache**） |
+| `rawcachedinputusage` | 全 0 |
+| `rawoutputusage` | 上游原始 output |
+| `usagestate` | complete / unavailable / parse_failed / partial |
+| `upstreamrequestid` | **网关 UUID，连 AstraFlow `request_id`** |
+| `upstreamrequestidsource` | ID 取自哪个 response header |
+| `upstreamrequestids` | JSON，多来源 ID，可补匹配 |
+| `requestidstate` | captured / pending_contract / absent / no_response |
+| `rawusagejson` | 原始 usage 报文 |
+
 <!-- AUTO:SCHEMA:START -->
 ## 字段结构（自动同步，勿手改本段）
 
@@ -36,37 +56,37 @@
 | 1 | `autooperationid` | `varchar(16382)` | YES |  |  |
 | 1 | `routeinvocationid` | `varchar(16382)` | YES |  |  |
 | 1 | `nodeexecutionid` | `varchar(16382)` | YES |  |  |
-| 1 | `routeattemptid` | `varchar(16382)` | YES |  | 连 `token_used_aw.routeattemptid` |
+| 1 | `routeattemptid` | `varchar(16382)` | YES |  |  |
 | 1 | `attemptindex` | `bigint` | YES |  |  |
 | 1 | `transportattemptindex` | `bigint` | YES |  |  |
 | 1 | `routesystem` | `varchar(16382)` | YES |  |  |
 | 1 | `userid` | `bigint` | YES |  |  |
 | 1 | `tenantid` | `double` | YES |  |  |
 | 1 | `requestedresourceid` | `varchar(16382)` | YES |  |  |
-| 1 | `actualupstreamresourceid` | `varchar(16382)` | YES |  | 实际模型名 |
-| 1 | `providername` | `varchar(16382)` | YES |  | 上游通道 |
+| 1 | `actualupstreamresourceid` | `varchar(16382)` | YES |  |  |
+| 1 | `providername` | `varchar(16382)` | YES |  |  |
 | 1 | `routename` | `varchar(16382)` | YES |  |  |
 | 1 | `categoryname` | `varchar(16382)` | YES |  |  |
-| 1 | `productline` | `varchar(16382)` | YES |  | 翻译服务类型 |
+| 1 | `productline` | `varchar(16382)` | YES |  |  |
 | 1 | `isstream` | `tinyint` | YES |  |  |
-| 1 | `startedat` | `timestamp` | YES |  | **唯一时间字段，必须带窗** |
+| 1 | `startedat` | `timestamp` | YES |  |  |
 | 1 | `completedat` | `timestamp` | YES |  |  |
 | 1 | `durationms` | `bigint` | YES |  |  |
-| 1 | `outcome` | `varchar(16382)` | YES |  | success / cancelled / upstream_error / transport_error / parse_error |
+| 1 | `outcome` | `varchar(16382)` | YES |  |  |
 | 1 | `httpstatuscode` | `double` | YES |  |  |
 | 1 | `errorkind` | `varchar(16382)` | YES |  |  |
-| 1 | `rawinputusage` | `double` | YES |  | 上游原始 input（**已含 cache**） |
-| 1 | `rawcachedinputusage` | `double` | YES |  | 全 0 |
-| 1 | `rawoutputusage` | `double` | YES |  | 上游原始 output |
+| 1 | `rawinputusage` | `double` | YES |  |  |
+| 1 | `rawcachedinputusage` | `double` | YES |  |  |
+| 1 | `rawoutputusage` | `double` | YES |  |  |
 | 1 | `rawcharacterusage` | `double` | YES |  |  |
-| 1 | `usagestate` | `varchar(16382)` | YES |  | complete / unavailable / parse_failed / partial |
-| 1 | `upstreamrequestid` | `varchar(16382)` | YES |  | **网关 UUID，连 AstraFlow `request_id`** |
-| 1 | `upstreamrequestidsource` | `varchar(16382)` | YES |  | ID 取自哪个 response header |
-| 1 | `upstreamrequestids` | `varchar(16382)` | YES |  | JSON，多来源 ID，可补匹配 |
+| 1 | `usagestate` | `varchar(16382)` | YES |  |  |
+| 1 | `upstreamrequestid` | `varchar(16382)` | YES |  |  |
+| 1 | `upstreamrequestidsource` | `varchar(16382)` | YES |  |  |
+| 1 | `upstreamrequestids` | `varchar(16382)` | YES |  |  |
 | 1 | `upstreamresponseid` | `varchar(16382)` | YES |  |  |
-| 1 | `requestidstate` | `varchar(16382)` | YES |  | captured / pending_contract / absent / no_response |
+| 1 | `requestidstate` | `varchar(16382)` | YES |  |  |
 | 1 | `routereason` | `varchar(16382)` | YES |  |  |
-| 1 | `rawusagejson` | `varchar(16382)` | YES |  | 原始 usage 报文 |
+| 1 | `rawusagejson` | `varchar(16382)` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
@@ -120,5 +140,5 @@ LIMIT 20;
 ## 维护
 
 - 本文件于 **2026-11-09 手工补录**（T082 首次使用该表）。`AUTO:SCHEMA` 段取自当日 `information_schema.columns`，格式与 `sync_table_catalog.py` 一致。
-- ⚠️ **暂勿直接跑 `python scripts/sync_table_catalog.py`**：当前只读账号下 `information_schema.tables` 只返回 **80** 张表，而 `INDEX.md` 收录 **111** 张，直接刷新会把历史索引缩水。需先确认账号权限/视图完整性再刷新。
+- 2026-11-20 已跑 `sync_table_catalog.py`：INDEX 按库内 86 张表重建，与本表一致。重跑注意：本文件的字段速记放在 `AUTO:SCHEMA` 段外、不会被冲掉；INDEX 里本表的注释是手工补的（库内 `table_comment` 为空），重跑需重补。
 - 相关：pitfalls **P049**、[`OVERVIEW.md`](../OVERVIEW.md)、[`token_used_aw.md`](token_used_aw.md)、T082 交付 `output/route_join_recon_20261102_20261106.xlsx`。

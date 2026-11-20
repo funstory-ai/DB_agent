@@ -15,3 +15,17 @@
 - **未填时**：`exp_group` 为空，dim 中记 `(unset)`；日常看板用 `ab_tag`
 - **DDL**：`sql/reports/task6_paywall_daily_etl.sql`
 - **勿用**：3 月实验的 `control`/`loose`/`strict`（`ads_ab_paywall_*`）当本轮分组
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `ab_tag` | `varchar(16382)` | YES |  |  |
+| 1 | `exp_group` | `varchar(16382)` | YES |  |  |
+| 1 | `start_dt` | `date` | YES |  |  |
+| 1 | `end_dt` | `date` | YES |  |  |
+| 1 | `note` | `varchar(16382)` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

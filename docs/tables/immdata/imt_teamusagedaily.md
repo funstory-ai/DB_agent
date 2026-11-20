@@ -23,17 +23,33 @@
   - 主要品类：`OpenAIPro` / `OpenAIMax` 占绝对大头；另有 BabelDoc/Comics/AsrAudio/PdfPro
   - 字段名 `usage` 在部分引擎可能需注意保留字（Databend 当前可直接写）
 
-<!-- AUTO:SCHEMA:START -->
-## 字段结构（探查补充）
+### 字段速记（手工维护，放在自动段外，避免被同步冲掉）
 
-| # | 字段 | 类型 | 可空 | 注释 |
-|---|------|------|------|------|
-| 1 | `id` | BIGINT | NO | |
-| 1 | `tenantid` | BIGINT | YES | → `imt_teamtenant.id` |
-| 1 | `tenantdate` | TIMESTAMP | YES | 用量日（通常 00:00:00） |
-| 1 | `modelname` | VARCHAR | YES | 模型名 |
-| 1 | `usage` | BIGINT | YES | 用量 |
-| 1 | `categoryname` | VARCHAR | YES | 品类（OpenAIPro/OpenAIMax/…） |
-| 1 | `isdeleted` | TINYINT | YES | 软删 |
+| 字段 | 说明 |
+|------|------|
+| `id` | 主键 |
+| `tenantid` | → `imt_teamtenant.id` |
+| `tenantdate` | 用量日（通常 00:00:00） |
+| `modelname` | 模型名 |
+| `usage` | 用量（同一天同模型多行，需聚合） |
+| `categoryname` | 品类（OpenAIPro / OpenAIMax / …） |
+| `isdeleted` | 软删 |
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `id` | `bigint` | NO |  |  |
+| 1 | `tenantid` | `bigint` | YES |  |  |
+| 1 | `tenantdate` | `timestamp` | YES |  |  |
+| 1 | `modelname` | `varchar(16382)` | YES |  |  |
+| 1 | `usage` | `bigint` | YES |  |  |
+| 1 | `categoryname` | `varchar(16382)` | YES |  |  |
+| 1 | `operator` | `varchar(16382)` | YES |  |  |
+| 1 | `updatetime` | `timestamp` | YES |  |  |
+| 1 | `createtime` | `timestamp` | YES |  |  |
+| 1 | `isdeleted` | `tinyint` | YES |  |  |
+| 1 | `dataversion` | `int` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->

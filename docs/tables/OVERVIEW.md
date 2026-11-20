@@ -49,6 +49,8 @@
 
 ## 维护
 
-- 结构同步：`python scripts/sync_table_catalog.py`（仅 immdata）。⚠️ **2026-11-09 起暂勿直接跑**：当前只读账号下 `information_schema.tables` 只返回 80 张表，而 `INDEX.md` 收录 111 张，刷新会缩水；先确认权限/视图完整性。手工补录的「来源与用途」段脚本会保留。
+- 结构同步：`python scripts/sync_table_catalog.py`（仅 immdata）。**2026-11-20 已跑过一次**，按库内 86 张表（83 BASE + 3 VIEW）重建 INDEX。历史上的「80 vs 111」不是权限问题：11-09 库里确实只有 80 张，11-17 新建 6 张 Google Ads 表后变成 86；INDEX 旧版是从 11-09 起没刷新的快照，多留了 46 张已删表、又漏了 20 张现存表。
+  - ⚠️ 两个同步坑：① 脚本**只保留 `<!-- AUTO:SCHEMA -->` 段之外**的手工内容，写在自动段内的列注释会被冲掉（故字段速记一律放段外）；② 它按库内 `table_comment` 写注释，`routing_ledger` 等库内注释为空，INDEX 里的说明是手工补的，重跑会丢，需重补。
+  - 46 张已下线表的孤儿单表文档已于 2026-11-20 删除（另有 `imm_paywall_daily_dim`，8-27 已废弃）。现在 `docs/tables/immdata/` 与库、INDEX 严格一一对应（86 = 86 = 86）。脚本本身不会自动删孤儿文档，将来若有表下线需手工清理。
 - 索引：[`INDEX.md`](INDEX.md)
 - 单表：[`immdata/`](immdata/)

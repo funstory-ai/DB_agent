@@ -1,13 +1,13 @@
-# `immdata.temp_ao3`
+# `immdata.mrr_temp`
 
 ## 基本信息
 
 | 项 | 内容 |
 |----|------|
-| 全名 | `immdata.temp_ao3` |
+| 全名 | `immdata.mrr_temp` |
 | 类型 | BASE TABLE / FUSE |
-| 约行数 | 34451 |
-| 创建时间 | 2025-12-04 00:33:02.621710 |
+| 约行数 | 325031 |
+| 创建时间 | 2026-09-01 05:59:48.089072 |
 | 表注释 | （待补充） |
 
 ## 来源与用途（手工维护）
@@ -27,13 +27,26 @@
 
 | # | 字段 | 类型 | 可空 | 默认 | 注释 |
 |---|------|------|------|------|------|
-| 1 | `device_id` | `varchar(16382)` | YES |  |  |
-| 1 | `install_day` | `varchar(16382)` | YES |  |  |
+| 1 | `order_day` | `date` | YES |  |  |
+| 1 | `one_month` | `date` | YES |  |  |
+| 1 | `two_month` | `date` | YES |  |  |
+| 1 | `three_month` | `date` | YES |  |  |
+| 1 | `four_month` | `date` | YES |  |  |
+| 1 | `five_month` | `date` | YES |  |  |
+| 1 | `six_month` | `date` | YES |  |  |
+| 1 | `seven_month` | `date` | YES |  |  |
+| 1 | `eigth_month` | `date` | YES |  |  |
+| 1 | `nine_month` | `date` | YES |  |  |
+| 1 | `ten_month` | `date` | YES |  |  |
+| 1 | `eleven_month` | `date` | YES |  |  |
+| 1 | `twelve_month` | `date` | YES |  |  |
+| 1 | `currency` | `varchar(16382)` | YES |  |  |
+| 1 | `amountpaid` | `double` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
 ## 样例核对（可选）
 
 ```sql
-SELECT * FROM immdata.temp_ao3 LIMIT 20;
+SELECT * FROM immdata.mrr_temp LIMIT 20;
 ```

@@ -26,3 +26,31 @@
 | `translate_fail_*` / `auth_fail_*` / `error_modal_*` | 健康汇总 |
 | `funnel_open_*` / `funnel_*_rate` | 同人日漏斗 |
 | `update_time` | 写入时间 |
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `dt_bj` | `date` | YES |  |  |
+| 1 | `plugin_active_uv` | `bigint` | YES |  |  |
+| 1 | `translate_user_uv` | `bigint` | YES |  |  |
+| 1 | `translate_click_pv` | `bigint` | YES |  |  |
+| 1 | `translate_success_pv` | `bigint` | YES |  |  |
+| 1 | `translate_success_rate` | `double` | YES |  |  |
+| 1 | `translate_per_user` | `double` | YES |  |  |
+| 1 | `translate_fail_pv` | `bigint` | YES |  |  |
+| 1 | `translate_fail_rate` | `double` | YES |  |  |
+| 1 | `auth_fail_pv` | `bigint` | YES |  |  |
+| 1 | `auth_fail_uv` | `bigint` | YES |  |  |
+| 1 | `error_modal_pv` | `bigint` | YES |  |  |
+| 1 | `error_modal_uv` | `bigint` | YES |  |  |
+| 1 | `funnel_open_uv` | `bigint` | YES |  |  |
+| 1 | `funnel_open_click_uv` | `bigint` | YES |  |  |
+| 1 | `funnel_open_click_success_uv` | `bigint` | YES |  |  |
+| 1 | `funnel_open_to_click_rate` | `double` | YES |  |  |
+| 1 | `funnel_click_to_success_rate` | `double` | YES |  |  |
+| 1 | `funnel_open_to_success_rate` | `double` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

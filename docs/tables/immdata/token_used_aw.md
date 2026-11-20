@@ -45,6 +45,14 @@
 | 1 | `countername` | `varchar(16382)` | YES |  |  |
 | 1 | `counterperiod` | `varchar(16382)` | YES |  |  |
 | 1 | `clientip` | `varchar(16382)` | YES |  |  |
+| 1 | `requestedresourceid` | `varchar(16382)` | YES |  |  |
+| 1 | `requestedcredit` | `double` | YES |  |  |
+| 1 | `chargedcredit` | `double` | YES |  |  |
+| 1 | `giveawaycredit` | `double` | YES |  |  |
+| 1 | `creditpoolallocations` | `varchar(16382)` | YES |  |  |
+| 1 | `grantedcredit` | `double` | YES |  |  |
+| 1 | `traceid` | `varchar(16382)` | YES |  |  |
+| 1 | `routeattemptid` | `varchar(16382)` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 

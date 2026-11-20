@@ -17,3 +17,26 @@
 - **DDL**：`sql/reports/task6_paywall_daily_etl.sql`
 - **勿想当然**：不是终身全局首次；只从回填下界起算。漏跑某日后靠近 3 日窗补进；更早漏记须重跑回填段
   - `interface_language` 仍保留触墙行原值，**分桶以 `lang_bucket` 为准**
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `device_id` | `varchar(16382)` | YES |  |  |
+| 1 | `first_paywall_ts` | `timestamp` | YES |  |  |
+| 1 | `first_paywall_dt_bj` | `date` | YES |  |  |
+| 1 | `userid` | `bigint` | YES |  |  |
+| 1 | `userid_from_event` | `bigint` | YES |  |  |
+| 1 | `userid_from_device` | `bigint` | YES |  |  |
+| 1 | `ab_tag` | `varchar(16382)` | YES |  |  |
+| 1 | `exp_group` | `varchar(16382)` | YES |  |  |
+| 1 | `platform_type` | `varchar(16382)` | YES |  |  |
+| 1 | `os_name` | `varchar(16382)` | YES |  |  |
+| 1 | `interface_language` | `varchar(16382)` | YES |  |  |
+| 1 | `lang_bucket` | `varchar(16382)` | YES |  |  |
+| 1 | `campaign` | `varchar(16382)` | YES |  |  |
+| 1 | `install_from` | `varchar(16382)` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

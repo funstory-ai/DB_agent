@@ -767,7 +767,7 @@ FROM upg u JOIN prior p ON u.userid=p.userid;
   1. 标准链路：`AstraFlow.request_id = RL.upstreamrequestid` → `RL.routeattemptid = TU.routeattemptid` → `inputusage/outputusage`。**不要用 `businessid`**。
   2. `routing_ledger` 必须带 `startedat` 粗时间窗 + `providername` 过滤（UCloud 只是 12 个上游通道之一）。
   3. 汇总前先逐条 JOIN（见 **P050**）；`upstreamrequestid` 非 100% 有值，补匹配可用 `upstreamrequestids`(JSON)。
-  4. 单表文档 [`docs/tables/immdata/routing_ledger.md`](tables/immdata/routing_ledger.md)；⚠️ 暂勿跑 `sync_table_catalog.py`（当前账号 `information_schema.tables` 只返回 80 张表，会把 111 张的索引刷掉）。
+  4. 单表文档 [`docs/tables/immdata/routing_ledger.md`](tables/immdata/routing_ledger.md)；2026-11-20 已跑 `sync_table_catalog.py` 按库内 86 张表重建 INDEX（详见 `docs/tables/README.md`）。
 - 示例 SQL（只读）：
 ```sql
 SELECT rl.upstreamrequestid, rl.routeattemptid, rl.rawinputusage, rl.rawoutputusage

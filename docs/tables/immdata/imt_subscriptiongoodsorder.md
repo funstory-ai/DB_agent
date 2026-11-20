@@ -76,6 +76,7 @@
 | 1 | `trialmaxaiquota` | `bigint` | YES |  |  |
 | 1 | `trialaisubtitlesquota` | `bigint` | YES |  |  |
 | 1 | `apptransactionid` | `varchar(16382)` | YES |  |  |
+| 1 | `billingsystem` | `varchar(16382)` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 

@@ -1,13 +1,13 @@
-# `immdata.tmp_ub_install`
+# `immdata.imm_translate_model_map`
 
 ## 基本信息
 
 | 项 | 内容 |
 |----|------|
-| 全名 | `immdata.tmp_ub_install` |
+| 全名 | `immdata.imm_translate_model_map` |
 | 类型 | BASE TABLE / FUSE |
-| 约行数 | 7141164 |
-| 创建时间 | 2026-03-20 10:38:03.445845 |
+| 约行数 | 77 |
+| 创建时间 | 2026-10-23 02:00:52.014019 |
 | 表注释 | （待补充） |
 
 ## 来源与用途（手工维护）
@@ -27,13 +27,16 @@
 
 | # | 字段 | 类型 | 可空 | 默认 | 注释 |
 |---|------|------|------|------|------|
-| 1 | `device_id` | `varchar(16382)` | YES |  |  |
-| 1 | `modal_install_day` | `varchar(16382)` | YES |  |  |
+| 1 | `translation_service` | `varchar(16382)` | YES |  |  |
+| 1 | `real_model` | `varchar(16382)` | YES |  |  |
+| 1 | `model_group` | `varchar(16382)` | YES |  |  |
+| 1 | `remark` | `varchar(16382)` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
 ## 样例核对（可选）
 
 ```sql
-SELECT * FROM immdata.tmp_ub_install LIMIT 20;
+SELECT * FROM immdata.imm_translate_model_map LIMIT 20;
 ```

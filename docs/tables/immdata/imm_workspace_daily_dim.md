@@ -18,3 +18,18 @@
 - **粒度**：`dt_bj` × `dim_type` × `dim_value`
 - **列**：`pv` / `uv` / `share_ratio`（勿用保留字 `share`，P023）
 - **DDL**：`sql/reports/task5_google_workspace_daily_etl.sql`
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `dt_bj` | `date` | YES |  |  |
+| 1 | `dim_type` | `varchar(16382)` | YES |  |  |
+| 1 | `dim_value` | `varchar(16382)` | YES |  |  |
+| 1 | `pv` | `bigint` | YES |  |  |
+| 1 | `uv` | `bigint` | YES |  |  |
+| 1 | `share_ratio` | `double` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

@@ -1,13 +1,13 @@
-# `immdata.imm_regional_conversion_geo`
+# `immdata.google_ads_campaign_snapshot`
 
 ## 基本信息
 
 | 项 | 内容 |
 |----|------|
-| 全名 | `immdata.imm_regional_conversion_geo` |
+| 全名 | `immdata.google_ads_campaign_snapshot` |
 | 类型 | BASE TABLE / FUSE |
-| 约行数 | 14376 |
-| 创建时间 | 2025-01-21 05:02:15.145676 |
+| 约行数 | 240 |
+| 创建时间 | 2026-11-17 02:18:48.304021 |
 | 表注释 | （待补充） |
 
 ## 来源与用途（手工维护）
@@ -27,16 +27,23 @@
 
 | # | 字段 | 类型 | 可空 | 默认 | 注释 |
 |---|------|------|------|------|------|
-| 1 | `install_week_startday` | `date` | YES |  |  |
-| 1 | `real_geo` | `varchar(16382)` | YES |  |  |
-| 1 | `new_user` | `int` | YES |  |  |
-| 1 | `paid_in_14days_user` | `int` | YES |  |  |
-| 1 | `paid_user` | `int` | YES |  |  |
+| 1 | `snapshot_date` | `date` | YES |  |  |
+| 1 | `customer_id` | `varchar(16382)` | YES |  |  |
+| 1 | `campaign_id` | `varchar(16382)` | YES |  |  |
+| 1 | `campaign_name` | `varchar(16382)` | YES |  |  |
+| 1 | `status` | `varchar(16382)` | YES |  |  |
+| 1 | `advertising_channel_type` | `varchar(16382)` | YES |  |  |
+| 1 | `bidding_strategy_type` | `varchar(16382)` | YES |  |  |
+| 1 | `final_url_suffix` | `varchar(16382)` | YES |  |  |
+| 1 | `tracking_url_template` | `varchar(16382)` | YES |  |  |
+| 1 | `api_version` | `varchar(16382)` | YES |  |  |
+| 1 | `ingest_batch` | `varchar(16382)` | YES |  |  |
+| 1 | `ingested_at` | `timestamp` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
 ## 样例核对（可选）
 
 ```sql
-SELECT * FROM immdata.imm_regional_conversion_geo LIMIT 20;
+SELECT * FROM immdata.google_ads_campaign_snapshot LIMIT 20;
 ```

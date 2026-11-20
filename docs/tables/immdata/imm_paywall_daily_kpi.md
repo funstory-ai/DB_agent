@@ -39,3 +39,54 @@
 - 日 `dau`/`paywall_uv` 求和 ≠ 窗口去重 UV
 - `first_paywall_uv` 每设备只记首次日，窗口内 SUM 可当窗内首次设备数
 - 转化用 userid，触墙人数用 device（P018）
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `dt_bj` | `date` | YES |  |  |
+| 1 | `dau` | `bigint` | YES |  |  |
+| 1 | `paywall_uv` | `bigint` | YES |  |  |
+| 1 | `register_wall_uv` | `bigint` | YES |  |  |
+| 1 | `first_paywall_uv` | `bigint` | YES |  |  |
+| 1 | `first_paywall_userid_cnt` | `bigint` | YES |  |  |
+| 1 | `first_paywall_uv_zh_cn` | `bigint` | YES |  |  |
+| 1 | `first_paywall_uv_other` | `bigint` | YES |  |  |
+| 1 | `expected_paid_users` | `double` | YES |  |  |
+| 1 | `checkout_users` | `bigint` | YES |  |  |
+| 1 | `trial_users` | `bigint` | YES |  |  |
+| 1 | `paid_users` | `bigint` | YES |  |  |
+| 1 | `d1_paid_users` | `bigint` | YES |  |  |
+| 1 | `d4_paid_users` | `bigint` | YES |  |  |
+| 1 | `d7_paid_users` | `bigint` | YES |  |  |
+| 1 | `d14_paid_users` | `bigint` | YES |  |  |
+| 1 | `d30_paid_users` | `bigint` | YES |  |  |
+| 1 | `d1_revenue_cny` | `double` | YES |  |  |
+| 1 | `d4_revenue_cny` | `double` | YES |  |  |
+| 1 | `d7_revenue_cny` | `double` | YES |  |  |
+| 1 | `d14_revenue_cny` | `double` | YES |  |  |
+| 1 | `d30_revenue_cny` | `double` | YES |  |  |
+| 1 | `d1_refund_users` | `bigint` | YES |  |  |
+| 1 | `d4_refund_users` | `bigint` | YES |  |  |
+| 1 | `d7_refund_users` | `bigint` | YES |  |  |
+| 1 | `d14_refund_users` | `bigint` | YES |  |  |
+| 1 | `d30_refund_users` | `bigint` | YES |  |  |
+| 1 | `d1_refund_cny` | `double` | YES |  |  |
+| 1 | `d4_refund_cny` | `double` | YES |  |  |
+| 1 | `d7_refund_cny` | `double` | YES |  |  |
+| 1 | `d14_refund_cny` | `double` | YES |  |  |
+| 1 | `d30_refund_cny` | `double` | YES |  |  |
+| 1 | `paywall_rate` | `double` | YES |  |  |
+| 1 | `first_paywall_rate` | `double` | YES |  |  |
+| 1 | `checkout_rate` | `double` | YES |  |  |
+| 1 | `trial_rate` | `double` | YES |  |  |
+| 1 | `paid_rate` | `double` | YES |  |  |
+| 1 | `d4_pay_rate` | `double` | YES |  |  |
+| 1 | `d7_pay_rate` | `double` | YES |  |  |
+| 1 | `arpu_30d` | `double` | YES |  |  |
+| 1 | `arppu_30d` | `double` | YES |  |  |
+| 1 | `rev_per_paywall_user_30d` | `double` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

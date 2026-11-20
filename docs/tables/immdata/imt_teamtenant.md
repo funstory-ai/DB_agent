@@ -19,19 +19,56 @@
 - **关联建议**：`id` = `imt_teamusagedaily.tenantid`；看板展示名用 `tenantname`
 - **勿想当然**：配额字段（`tokensquotapro` 等）是额度上限，不是日用量；日用量在 `imt_teamusagedaily`
 
-<!-- AUTO:SCHEMA:START -->
-## 字段结构（探查补充，可被 sync 覆盖）
+### 字段速记（手工维护，放在自动段外，避免被同步冲掉）
 
-| # | 字段 | 类型 | 可空 | 注释 |
-|---|------|------|------|------|
-| 1 | `id` | BIGINT | NO | 租户 ID |
-| 1 | `tenantname` | VARCHAR | YES | 租户名称 |
-| 1 | `email` | VARCHAR | YES | 联系邮箱 |
-| 1 | `userid` | BIGINT | YES | 关联账号 |
-| 1 | `memberlimit` | INT | YES | 席位上限 |
-| 1 | `starttime` / `expiretime` | TIMESTAMP | YES | 合约起止 |
-| 1 | `tokensquotapro` / `tokensquotamax` 等 | BIGINT | YES | 各类配额 |
-| 1 | `isdeleted` | TINYINT | YES | 软删 |
-| 1 | `createtime` / `updatetime` | TIMESTAMP | YES | |
+| 字段 | 说明 |
+|------|------|
+| `id` | 租户 ID（= 用量表 `tenantid`） |
+| `tenantname` / `email` | 租户名称 / 联系邮箱 |
+| `userid` | 关联账号 |
+| `memberlimit` | 席位上限 |
+| `starttime` / `expiretime` | 合约起止 |
+| `tokensquotapro` / `tokensquotamax` 等 | 各类配额（上限，非日用量） |
+| `isdeleted` | 软删 |
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `id` | `bigint` | NO |  |  |
+| 1 | `tenantname` | `varchar(16382)` | YES |  |  |
+| 1 | `email` | `varchar(16382)` | YES |  |  |
+| 1 | `userid` | `bigint` | YES |  |  |
+| 1 | `memberlimit` | `int` | YES |  |  |
+| 1 | `starttime` | `timestamp` | YES |  |  |
+| 1 | `expiretime` | `timestamp` | YES |  |  |
+| 1 | `tokensquotapro` | `bigint` | YES |  |  |
+| 1 | `tokensquotamax` | `bigint` | YES |  |  |
+| 1 | `comicsquota` | `bigint` | YES |  |  |
+| 1 | `pdfproquota` | `bigint` | YES |  |  |
+| 1 | `babeldocquota` | `bigint` | YES |  |  |
+| 1 | `asraudioquota` | `bigint` | YES |  |  |
+| 1 | `storagealias` | `varchar(16382)` | YES |  |  |
+| 1 | `storageusage` | `bigint` | YES |  |  |
+| 1 | `provider` | `varchar(16382)` | YES |  |  |
+| 1 | `bucket` | `varchar(16382)` | YES |  |  |
+| 1 | `region` | `varchar(16382)` | YES |  |  |
+| 1 | `remark` | `varchar(16382)` | YES |  |  |
+| 1 | `ext1` | `varchar(16382)` | YES |  |  |
+| 1 | `ext2` | `varchar(16382)` | YES |  |  |
+| 1 | `ext3` | `varchar(16382)` | YES |  |  |
+| 1 | `operator` | `varchar(16382)` | YES |  |  |
+| 1 | `updatetime` | `timestamp` | YES |  |  |
+| 1 | `createtime` | `timestamp` | YES |  |  |
+| 1 | `isdeleted` | `tinyint` | YES |  |  |
+| 1 | `dataversion` | `int` | YES |  |  |
+| 1 | `asraudioquotadefaultlimit` | `bigint` | YES |  |  |
+| 1 | `babeldocquotadefaultlimit` | `bigint` | YES |  |  |
+| 1 | `comicsquotadefaultlimit` | `bigint` | YES |  |  |
+| 1 | `pdfproquotadefaultlimit` | `bigint` | YES |  |  |
+| 1 | `tokensquotamaxdefaultlimit` | `bigint` | YES |  |  |
+| 1 | `tokensquotaprodefaultlimit` | `bigint` | YES |  |  |
+| 1 | `seatversion` | `bigint` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->

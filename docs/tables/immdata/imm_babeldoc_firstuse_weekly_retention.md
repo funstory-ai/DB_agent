@@ -28,3 +28,24 @@
 | `ret_w1_users`～`ret_w4_users` | 留存人数 |
 | `w1_retention_rate`～`w4_retention_rate` | 留存率 |
 | `update_time` | 写入时间 |
+
+<!-- AUTO:SCHEMA:START -->
+## 字段结构（自动同步，勿手改本段）
+
+| # | 字段 | 类型 | 可空 | 默认 | 注释 |
+|---|------|------|------|------|------|
+| 1 | `biz_code` | `varchar(16382)` | YES |  |  |
+| 1 | `biz_name` | `varchar(16382)` | YES |  |  |
+| 1 | `cohort_week_start` | `date` | YES |  |  |
+| 1 | `cohort_users` | `bigint` | YES |  |  |
+| 1 | `ret_w1_users` | `bigint` | YES |  |  |
+| 1 | `ret_w2_users` | `bigint` | YES |  |  |
+| 1 | `ret_w3_users` | `bigint` | YES |  |  |
+| 1 | `ret_w4_users` | `bigint` | YES |  |  |
+| 1 | `w1_retention_rate` | `double` | YES |  |  |
+| 1 | `w2_retention_rate` | `double` | YES |  |  |
+| 1 | `w3_retention_rate` | `double` | YES |  |  |
+| 1 | `w4_retention_rate` | `double` | YES |  |  |
+| 1 | `update_time` | `timestamp` | YES |  |  |
+
+<!-- AUTO:SCHEMA:END -->

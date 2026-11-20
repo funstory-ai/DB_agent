@@ -1,13 +1,13 @@
-# `immdata.imm_new_user_cohort_dedup`
+# `immdata.imt_novicetaskrecord`
 
 ## 基本信息
 
 | 项 | 内容 |
 |----|------|
-| 全名 | `immdata.imm_new_user_cohort_dedup` |
+| 全名 | `immdata.imt_novicetaskrecord` |
 | 类型 | BASE TABLE / FUSE |
-| 约行数 | 0 |
-| 创建时间 | 2026-02-27 07:55:30.029225 |
+| 约行数 | 2571415 |
+| 创建时间 | 2026-10-13 12:12:23.303859 |
 | 表注释 | （待补充） |
 
 ## 来源与用途（手工维护）
@@ -27,15 +27,27 @@
 
 | # | 字段 | 类型 | 可空 | 默认 | 注释 |
 |---|------|------|------|------|------|
-| 1 | `device_id` | `varchar(16382)` | YES |  |  |
+| 1 | `id` | `bigint` | NO |  |  |
 | 1 | `userid` | `bigint` | YES |  |  |
-| 1 | `installtime` | `timestamp` | YES |  |  |
-| 1 | `update_time` | `timestamp` | YES |  |  |
+| 1 | `useremail` | `varchar(16382)` | YES |  |  |
+| 1 | `taskkey` | `varchar(16382)` | YES |  |  |
+| 1 | `deviceid` | `varchar(16382)` | YES |  |  |
+| 1 | `taskconfigjson` | `varchar(16382)` | YES |  |  |
+| 1 | `extenddatajson` | `varchar(16382)` | YES |  |  |
+| 1 | `reqheadersjson` | `varchar(16382)` | YES |  |  |
+| 1 | `grantid` | `varchar(16382)` | YES |  |  |
+| 1 | `sourcetype` | `varchar(16382)` | YES |  |  |
+| 1 | `sourcerecordid` | `varchar(16382)` | YES |  |  |
+| 1 | `operator` | `varchar(16382)` | YES |  |  |
+| 1 | `updatetime` | `timestamp` | YES |  |  |
+| 1 | `createtime` | `timestamp` | YES |  |  |
+| 1 | `isdeleted` | `tinyint` | YES |  |  |
+| 1 | `dataversion` | `int` | YES |  |  |
 
 <!-- AUTO:SCHEMA:END -->
 
 ## 样例核对（可选）
 
 ```sql
-SELECT * FROM immdata.imm_new_user_cohort_dedup LIMIT 20;
+SELECT * FROM immdata.imt_novicetaskrecord LIMIT 20;
 ```
